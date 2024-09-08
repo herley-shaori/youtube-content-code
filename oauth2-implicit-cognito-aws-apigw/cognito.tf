@@ -50,6 +50,6 @@ resource "null_resource" "add_user" {
 
 # Output the Generated Password for Debugging Purposes
 output "cognito_user_password" {
-  value = random_password.user_password.result
+  value     = random_password.user_password.result
   sensitive = true
 }

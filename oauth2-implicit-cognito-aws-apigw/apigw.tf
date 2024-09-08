@@ -54,7 +54,7 @@ resource "aws_api_gateway_deployment" "main" {
   }
   depends_on = [
     aws_api_gateway_method.example,
-    aws_api_gateway_integration.lambda_integration  # Ensure the integration is ready
+    aws_api_gateway_integration.lambda_integration # Ensure the integration is ready
   ]
 }
 
