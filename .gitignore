@@ -1,2 +1,33 @@
+# Presentation files and generated archives
 *.pptx
 *.zip
+
+# Local secrets and configuration
+.env
+.env.*
+!.env.example
+*.tfvars
+*.tfvars.json
+!*.tfvars.example
+!*.tfvars.json.example
+
+# Terraform generated files (commit dependency lock files)
+**/.terraform/*
+*.tfstate
+*.tfstate.*
+*.tfplan
+crash.log
+crash.*.log
+.terraformrc
+terraform.rc
+
+# Python and Node.js generated files
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+node_modules/
+
+# Local editor and operating system files
+.DS_Store
+.idea/
