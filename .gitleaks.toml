@@ -1,0 +1,36 @@
+# Gitleaks configuration for this public repository.
+# Extends the default secret rules with cloud account identifiers, which are not
+# secrets but must not be published. Use placeholders or variables instead.
+[extend]
+useDefault = true
+
+[[rules]]
+id = "aws-account-id"
+description = "AWS account ID in an ARN or account field"
+regex = '''(?i)(?:arn:aws[a-z-]*:[a-z0-9-]*:[a-z0-9-]*:|(?:account[_-]?id|aws[_-]?account|owner[_-]?id|principal)["'\s]*[:=]\s*["']?)(\d{12})\b'''
+secretGroup = 1
+keywords = ["arn:aws", "account", "owner", "principal"]
+
+[[rules]]
+id = "azure-subscription-or-tenant-id"
+description = "Azure subscription, tenant, or client ID"
+regex = '''(?i)(?:/subscriptions/|(?:subscription|tenant|client|object)[_-]?id["'\s]*[:=]\s*["']?)([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})\b'''
+secretGroup = 1
+keywords = ["subscription", "tenant", "client", "object"]
+
+[[rules]]
+id = "gcp-project-id"
+description = "Google Cloud project ID or number"
+regex = '''(?i)(?:projects/|project[_-]?(?:id|number)["'\s]*[:=]\s*["'])([a-z][a-z0-9-]{4,28}[a-z0-9]|\d{6,})\b'''
+secretGroup = 1
+keywords = ["project"]
+
+# Documented placeholder values are allowed.
+[[allowlists]]
+description = "Placeholder identifiers"
+regexes = [
+  '''^(?:123456789012|000000000000|111111111111)$''',
+  '''^0{8}-0{4}-0{4}-0{4}-0{12}$''',
+  '''(?i)^(?:your|my|example|sample|placeholder|changeme|replace)[a-z0-9-]*$''',
+  '''(?i)project-id$''',
+]

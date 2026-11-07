@@ -98,5 +98,8 @@ git config core.hooksPath .githooks
 ```
 
 Hook `pre-commit` menolak file `.env`, Terraform state, file `.tfvars`, private key,
-dan file kredensial cloud, lalu memindai perubahan dengan Gitleaks. Untuk memindai
+dan file kredensial cloud, lalu memindai perubahan dengan Gitleaks. Selain aturan
+bawaan Gitleaks, [`.gitleaks.toml`](.gitleaks.toml) juga menolak AWS account ID,
+Azure subscription/tenant ID, dan GCP project ID. Gunakan variabel, data source
+seperti `aws_caller_identity`, atau placeholder seperti `123456789012`. Untuk memindai
 seluruh riwayat secara manual, jalankan `gitleaks git .` dari root repositori.
