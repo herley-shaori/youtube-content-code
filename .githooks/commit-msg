@@ -1,0 +1,8 @@
+#!/bin/sh
+# Rejects attribution trailers so commit history only credits the repository owner.
+set -eu
+
+if grep -qiE '^co-authored-by:|generated (with|by) .*(claude|anthropic|copilot|chatgpt|openai)' "$1"; then
+  echo "Commit rejected: remove Co-Authored-By and AI attribution lines from the message." >&2
+  exit 1
+fi

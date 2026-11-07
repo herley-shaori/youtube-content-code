@@ -31,3 +31,20 @@ node_modules/
 # Local editor and operating system files
 .DS_Store
 .idea/
+
+# Cloud credentials, keys, and certificates
+*.pem
+*.key
+*.p12
+*.pfx
+id_rsa*
+id_ecdsa*
+id_ed25519*
+credentials
+credentials.json
+*service-account*.json
+*.publishsettings
+kubeconfig
+.aws/
+.azure/
+.config/gcloud/

@@ -53,7 +53,7 @@ mekanisme kredensial AWS lokal yang sesuai; jangan menulis access key di kode.
 Jalankan dari folder tutorial ini:
 
 ```sh
-cd oauth2-implicit-cognito-aws-apigw
+cd aws/oauth2-implicit-cognito-aws-apigw
 terraform init
 terraform validate
 terraform plan

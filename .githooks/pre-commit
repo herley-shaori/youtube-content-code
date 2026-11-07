@@ -1,0 +1,21 @@
+#!/bin/sh
+# Blocks local-only files and credentials before they reach this public repository.
+# Enable once per clone: git config core.hooksPath .githooks
+set -eu
+
+blocked=$(git diff --cached --name-only --diff-filter=ACMR \
+  | grep -iE '(^|/)(claude\.md|\.env(\..+)?|[^/]*\.tfstate(\..+)?|[^/]*\.tfvars(\.json)?|[^/]*\.(pem|key|p12|pfx)|id_(rsa|ecdsa|ed25519)|credentials(\.json)?|kubeconfig)$' \
+  | grep -vE '\.example$' || true)
+
+if [ -n "$blocked" ]; then
+  echo "Commit rejected: these files must never be committed to a public repository:" >&2
+  echo "$blocked" | sed 's/^/  /' >&2
+  exit 1
+fi
+
+if ! command -v gitleaks >/dev/null 2>&1; then
+  echo "Commit rejected: gitleaks is not installed (brew install gitleaks)." >&2
+  exit 1
+fi
+
+gitleaks git --pre-commit --staged --redact --no-banner
