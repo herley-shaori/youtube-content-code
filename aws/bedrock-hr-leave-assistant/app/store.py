@@ -9,9 +9,9 @@ LEAVE_TYPES = ["Annual", "Sick", "Maternity", "Paternity", "Marriage", "Bereavem
 
 # Demo accounts for a fictional company. Never put real credentials in this repository.
 USERS = {
-    "rina": {"name": "Rina Wijaya", "role": "employee", "password": "rina-demo"},
-    "andi": {"name": "Andi Pratama", "role": "employee", "password": "andi-demo"},
-    "sari": {"name": "Sari Hidayat", "role": "hr", "password": "sari-demo"},
+    "rina": {"name": "Rina Wijaya", "role": "employee", "password": "v6xi22xw"},
+    "andi": {"name": "Andi Pratama", "role": "employee", "password": "6xb9p1gp"},
+    "sari": {"name": "Sari Hidayat", "role": "hr", "password": "fd6woo16"},
 }
 
 REQUESTS = [

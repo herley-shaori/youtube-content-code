@@ -68,9 +68,9 @@ Demo accounts (fictional people, demo passwords only):
 
 | Username | Password | Role |
 | --- | --- | --- |
-| `rina` | `rina-demo` | employee |
-| `andi` | `andi-demo` | employee |
-| `sari` | `sari-demo` | hr |
+| `rina` | `v6xi22xw` | employee |
+| `andi` | `6xb9p1gp` | employee |
+| `sari` | `fd6woo16` | hr |
 
 Authentication is deliberately simple: the accounts live in `app/store.py`, and the
 session is an HMAC-signed, `HttpOnly`, `SameSite=Strict` cookie that expires after
