@@ -10,8 +10,7 @@ all.
 | --- | --- |
 | AWS | IAM OIDC provider for GitHub Actions (optional), deploy role for GitHub Actions, Lambda role, log group (7 days), Lambda function built from `../app/src`, Function URL |
 | Cloudflare | WAF custom rule that blocks the app hostname, proxied CNAME from the hostname to the Function URL |
-
-The GitHub side (environment, secret, variables) comes in the next step of part 1.
+| GitHub | Environment `ai-stg` that only tags matching `bedrock-hr-assistant-stg-v*` can use, secrets `AWS_ROLE_ARN`, `FUNCTION_URL`, `ORIGIN_SECRET`, variables `AWS_REGION`, `FUNCTION_NAME` |
 
 ## How the app is protected
 
@@ -38,11 +37,12 @@ sets the `Host` header to the Function URL host. Then the block rule is removed.
 
 Requirements: Terraform 1.10 or later, an AWS profile that can reach the target
 account, and a Cloudflare API token with **Zone DNS Edit** and **Zone WAF Edit** on the
-zone.
+zone. A GitHub token with admin access to the repository.
 
 ```sh
 cp terraform.tfvars.example terraform.tfvars   # fill in your values
 export TF_VAR_cloudflare_api_token="..."       # never put it in a file in the repo
+export GITHUB_TOKEN="$(gh auth token)"
 terraform init
 terraform plan
 terraform apply
@@ -66,6 +66,6 @@ Notes:
 terraform destroy
 ```
 
-This removes the AWS and Cloudflare resources. The code stays in this repository and
+This removes the AWS, Cloudflare and GitHub resources. The code stays in this repository and
 can be applied again. A GitHub OIDC provider that you did not create here is left as
 it is.

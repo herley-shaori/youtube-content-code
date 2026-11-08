@@ -66,12 +66,12 @@ Implementation choices for part 1, and why:
 
 - **GitHub Actions as the CI/CD engine.** AWS CodeConnections (formerly CodeStar
   Connections) is not available in `ap-southeast-3`, so CodePipeline there cannot use
-  GitHub as a source. Pull requests run tests with no AWS access; pushes to `master`
-  deploy.
+  GitHub as a source. A deployment starts only when a tag such as
+  `bedrock-hr-assistant-stg-v1.0` is pushed, and the tagged commit must be on `master`.
 - **No access keys.** The code is in a public repository, so long-lived keys are a
   risk. GitHub Actions signs in to AWS with OpenID Connect (OIDC) and receives
   short-lived credentials for one job. The IAM role trusts only this repository's
-  `aws` environment, which only `master` can deploy to, so forks cannot assume it.
+  `ai-stg` environment, which only deployment tags can use, so forks cannot assume it.
 - **Everything as code with Terraform.** One configuration creates all sides: the
   GitHub environment, its secret and variables, the AWS OIDC provider, the IAM roles,
   the Lambda function, its Function URL, and the Cloudflare rules and DNS record.
@@ -135,6 +135,21 @@ Run the sanity tests from the same `app/` folder (they never call AWS):
 python3 -m unittest discover -s tests -v
 ```
 
+## Deploy to staging
+
+After applying [the Terraform configuration](terraform/README.md), tag a commit on
+`master` and push the tag:
+
+```sh
+git tag bedrock-hr-assistant-stg-v1.0
+git push origin bedrock-hr-assistant-stg-v1.0
+```
+
+The workflow in `.github/workflows/bedrock-hr-assistant-deploy.yml` then checks that the
+commit is on `master`, runs the sanity tests in parallel, builds the package, deploys
+it, and runs a smoke test that calls the real model once. Pushing to `master` alone
+deploys nothing.
+
 ## Structure
 
 ```text
@@ -149,7 +164,7 @@ aws/bedrock-cicd/                  # topic: CI/CD for Amazon Bedrock apps
     │   │   ├── assistant.py       # local answers or Amazon Bedrock Converse API
     │   │   ├── prompt.md          # system prompt
     │   │   └── policy.md          # fictional leave policy
-    │   ├── tests/                 # sanity tests, no AWS calls
+    │   ├── tests/                 # sanity tests (no AWS calls) and smoke.py (deployed app)
     │   └── run_local.py           # runs src/ on http://127.0.0.1:8765
     └── terraform/                 # infrastructure code (AWS, Cloudflare, GitHub), part 1
 ```

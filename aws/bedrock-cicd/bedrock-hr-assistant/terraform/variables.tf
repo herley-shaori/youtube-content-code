@@ -54,6 +54,12 @@ variable "github_environment" {
   default     = "ai-stg"
 }
 
+variable "github_deploy_tag_pattern" {
+  description = "Only tags matching this pattern can deploy to the GitHub environment."
+  type        = string
+  default     = "bedrock-hr-assistant-stg-v*"
+}
+
 variable "cloudflare_api_token" {
   description = "Token with DNS Edit and Zone WAF Edit on the zone. Pass it as TF_VAR_cloudflare_api_token."
   type        = string

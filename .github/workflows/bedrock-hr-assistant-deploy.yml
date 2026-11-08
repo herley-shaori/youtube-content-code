@@ -1,0 +1,96 @@
+name: Deploy bedrock-hr-assistant to staging
+
+# Runs only when a tag such as bedrock-hr-assistant-stg-v1.0 is pushed.
+on:
+  push:
+    tags:
+      - bedrock-hr-assistant-stg-v*
+
+permissions:
+  contents: read
+
+env:
+  APP_DIR: aws/bedrock-cicd/bedrock-hr-assistant/app
+
+jobs:
+  verify-tag:
+    name: Verify the tagged commit is on master
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - run: git merge-base --is-ancestor "$GITHUB_SHA" origin/master
+
+  sanity:
+    name: ${{ matrix.title }}
+    needs: verify-tag
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - title: "Sanity: sign-in, sessions and HR-only pages"
+            suite: AuthenticationTest
+          - title: "Sanity: HR assistant answers and input limits"
+            suite: AssistantTest
+          - title: "Sanity: leave requests and HR approval"
+            suite: LeaveRequestTest
+          - title: "Sanity: requests without the Cloudflare secret are rejected"
+            suite: OriginTest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - run: python -m unittest -v "tests.test_handler.${{ matrix.suite }}"
+        working-directory: ${{ env.APP_DIR }}
+
+  package:
+    name: Build the Lambda package
+    needs: sanity
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: zip -r "$GITHUB_WORKSPACE/app.zip" . -x '__pycache__/*'
+        working-directory: ${{ env.APP_DIR }}/src
+      - uses: actions/upload-artifact@v4
+        with:
+          name: lambda-package
+          path: app.zip
+          retention-days: 1
+
+  deploy:
+    name: Deploy the package to Lambda
+    needs: package
+    runs-on: ubuntu-latest
+    environment: ai-stg
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: lambda-package
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: ${{ vars.AWS_REGION }}
+      - run: aws lambda update-function-code --function-name "${{ vars.FUNCTION_NAME }}" --zip-file fileb://app.zip --output none
+      - run: aws lambda wait function-updated --function-name "${{ vars.FUNCTION_NAME }}"
+
+  smoke-test:
+    name: "Smoke test: sign in and ask the real model"
+    needs: deploy
+    runs-on: ubuntu-latest
+    environment: ai-stg
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - run: python tests/smoke.py
+        working-directory: ${{ env.APP_DIR }}
+        env:
+          FUNCTION_URL: ${{ secrets.FUNCTION_URL }}
+          ORIGIN_SECRET: ${{ secrets.ORIGIN_SECRET }}
