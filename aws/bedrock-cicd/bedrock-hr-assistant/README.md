@@ -72,10 +72,15 @@ Implementation choices for part 1, and why:
   risk. GitHub Actions signs in to AWS with OpenID Connect (OIDC) and receives
   short-lived credentials for one job. The IAM role trusts only this repository's
   `aws` environment, which only `master` can deploy to, so forks cannot assume it.
-- **Everything as code with Terraform.** One configuration creates both sides: the
+- **Everything as code with Terraform.** One configuration creates all sides: the
   GitHub environment, its secret and variables, the AWS OIDC provider, the IAM roles,
-  the Lambda function, and its Function URL. One `terraform destroy` removes them all,
-  while the code stays in this repository.
+  the Lambda function, its Function URL, and the Cloudflare rules and DNS record.
+  Nothing is changed by hand in AWS or Cloudflare. One `terraform destroy` removes
+  them all, while the code stays in this repository.
+- **Cloudflare is the only way in.** The public hostname is a proxied Cloudflare
+  record. Direct calls to the Function URL get `403` because they lack a secret
+  header that only Cloudflare adds. Until the app is ready, a Cloudflare WAF rule
+  blocks all traffic. See [terraform/README.md](terraform/README.md).
 - **A simple app served by Lambda.** The Lambda function serves the web pages and
   calls Amazon Nova Lite on demand in Jakarta through the Bedrock Converse API.
 - **Cost under control.** Small reserved concurrency, input limits, and destroying
@@ -146,7 +151,7 @@ aws/bedrock-cicd/                  # topic: CI/CD for Amazon Bedrock apps
     │   │   └── policy.md          # fictional leave policy
     │   ├── tests/                 # sanity tests, no AWS calls
     │   └── run_local.py           # runs src/ on http://127.0.0.1:8765
-    └── terraform/                 # infrastructure code (GitHub and AWS), part 1
+    └── terraform/                 # infrastructure code (AWS, Cloudflare, GitHub), part 1
 ```
 
 Only `app/src/` is deployed to Lambda. Tests and the local runner stay out of the
@@ -162,8 +167,10 @@ root, because GitHub only reads them from there.
 | `AWS_REGION` | `ap-southeast-3` | Region for Bedrock calls |
 | `SESSION_SECRET` | random per start | HMAC key for session cookies; set it in Lambda |
 | `COOKIE_SECURE` | `1` (`0` in `app/run_local.py`) | Adds the `Secure` flag to the session cookie |
+| `ORIGIN_SECRET` | empty | Value Cloudflare sends in `x-origin-verify`; set by Terraform. On Lambda an empty value rejects every request |
 | `PORT` | `8765` | Local server port |
 
 ## Clean up
 
-Locally, stop the server. Nothing is created in any cloud account.
+Locally, stop the server. Running locally creates nothing in any cloud account. If
+you applied the Terraform configuration, run `terraform destroy` in `terraform/`.

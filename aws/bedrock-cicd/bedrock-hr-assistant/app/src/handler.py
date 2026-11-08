@@ -17,6 +17,11 @@ SECRET = (os.environ.get("SESSION_SECRET") or secrets.token_hex(32)).encode()
 SESSION_SECONDS = 8 * 3600
 COOKIE_SECURE = os.environ.get("COOKIE_SECURE", "1") != "0"
 MAX_BODY_BYTES = 10_000
+# Cloudflare adds this header to every request it forwards, so a direct call to the
+# Function URL gets 403. On Lambda a missing secret rejects everything (fail closed).
+ORIGIN_HEADER = "x-origin-verify"
+ORIGIN_SECRET = os.environ.get("ORIGIN_SECRET", "")
+ON_LAMBDA = "AWS_LAMBDA_FUNCTION_NAME" in os.environ
 SECURITY_HEADERS = {
     "Content-Type": "text/html; charset=utf-8",
     "Content-Security-Policy": "default-src 'none'; style-src 'unsafe-inline'; form-action 'self'; frame-ancestors 'none'",
@@ -153,8 +158,17 @@ ROUTES = {
 HR_ONLY = {"/approvals"}
 
 
+def from_cloudflare(event):
+    if not ORIGIN_SECRET:
+        return not ON_LAMBDA
+    sent = (event.get("headers") or {}).get(ORIGIN_HEADER, "")
+    return hmac.compare_digest(sent.encode(), ORIGIN_SECRET.encode())
+
+
 def lambda_handler(event, context):
-    method = event.get("requestContext", {}).get("http", {}).get("method", "GET")
+    if not from_cloudflare(event):
+        return {"statusCode": 403, "headers": {**SECURITY_HEADERS, "Content-Type": "text/plain"}, "body": "Forbidden"}
+    method =event.get("requestContext", {}).get("http", {}).get("method", "GET")
     path = event.get("rawPath") or "/"
     form = _form(event) if method == "POST" else {}
     user = current_user(event)

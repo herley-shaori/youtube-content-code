@@ -1,0 +1,15 @@
+# Copy to terraform.tfvars (ignored by Git) and fill in your own values.
+# The Cloudflare token is not stored here: export TF_VAR_cloudflare_api_token.
+
+account_id       = "123456789012"
+aws_profile      = "my-profile"
+assume_role_name = null # or "OrganizationAccountAccessRole" from a management account
+
+# false when the account already has token.actions.githubusercontent.com
+create_github_oidc_provider = true
+
+github_repository  = "your-user/youtube-content-code"
+github_environment = "ai-stg"
+
+cloudflare_zone_name = "example.com"
+hostname             = "hr-assistant.example.com"

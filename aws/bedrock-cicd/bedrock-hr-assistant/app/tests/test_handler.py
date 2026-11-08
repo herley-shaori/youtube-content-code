@@ -88,5 +88,25 @@ class LeaveRequestTest(unittest.TestCase):
         self.assertEqual(next(r for r in store.REQUESTS if r["id"] == request_id)["status"], "Approved")
 
 
+class OriginTest(unittest.TestCase):
+    def tearDown(self):
+        handler.ORIGIN_SECRET, handler.ON_LAMBDA = "", False
+
+    def test_direct_call_without_cloudflare_header_is_rejected(self):
+        handler.ORIGIN_SECRET = "s3cret"
+        self.assertEqual(call("GET", "/login")["statusCode"], 403)
+        event = {"rawPath": "/login", "headers": {"x-origin-verify": "wrong"}}
+        self.assertEqual(handler.lambda_handler(event, None)["statusCode"], 403)
+
+    def test_call_with_cloudflare_header_is_served(self):
+        handler.ORIGIN_SECRET = "s3cret"
+        event = {"rawPath": "/login", "headers": {"x-origin-verify": "s3cret"}}
+        self.assertEqual(handler.lambda_handler(event, None)["statusCode"], 200)
+
+    def test_lambda_without_origin_secret_rejects_everything(self):
+        handler.ON_LAMBDA = True
+        self.assertEqual(call("GET", "/login")["statusCode"], 403)
+
+
 if __name__ == "__main__":
     unittest.main()
