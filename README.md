@@ -10,7 +10,7 @@ folder to study and try the code.
 | Tutorial | Technology | Code and guide | Video |
 | --- | --- | --- | --- |
 | OAuth 2.0 implicit flow with Cognito and API Gateway | AWS, Terraform, Python | [Open tutorial](aws/oauth2-implicit-cognito-aws-apigw/) | Not published yet |
-| HR leave assistant: CI/CD for an Amazon Bedrock app in Jakarta | AWS, Amazon Bedrock, Lambda, Python | [Open tutorial](aws/bedrock-hr-assistant/) | Not published yet |
+| HR leave assistant: CI/CD for an Amazon Bedrock app in Jakarta | AWS, Amazon Bedrock, Lambda, Python | [Open tutorial](aws/bedrock-cicd/bedrock-hr-assistant/) | Not published yet |
 
 Video links are added once each video is published. Every folder has its own README
 that covers prerequisites, configuration, how to run it, and how to clean up any
@@ -42,22 +42,28 @@ repository or run every example at once.
 │   └── tutorial/
 │       └── README.md                 # README template for new tutorials
 ├── aws/
-│   ├── oauth2-implicit-cognito-aws-apigw/  # one folder per tutorial
-│   └── bedrock-hr-assistant/
+│   ├── oauth2-implicit-cognito-aws-apigw/  # older single-folder tutorial
+│   └── bedrock-cicd/                 # topic
+│       └── bedrock-hr-assistant/     # use case
+│           ├── app/                  # application code
+│           └── terraform/            # infrastructure code
 ├── azure/
 └── gcp/
 ```
 
-Each tutorial lives in the folder of the cloud it covers: `aws/`, `azure/`, or `gcp/`.
-New tutorials use a descriptive `kebab-case` folder name, for example
-`python-rest-api` or `terraform-aws-vpc`. Simple code can sit directly in the
-tutorial folder. When a tutorial combines several components, use subfolders such
-as `app/`, `terraform/`, or `scripts/`. Terraform is not required: the layout follows
-the technology the tutorial covers.
+New tutorials follow `<cloud>/<topic>/<use-case>/`:
+
+- `<cloud>` is `aws/`, `azure/`, or `gcp/`.
+- `<topic>` groups the use cases of one subject, for example `bedrock-cicd`.
+- `<use-case>` is the app or scenario being built, for example `bedrock-hr-assistant`.
+
+Inside a use case, keep the application code in `app/` and the infrastructure code in
+`terraform/`, so it is always clear which code runs where. Add `scripts/` only when
+needed. All folder names use `kebab-case`.
 
 ## Adding a tutorial
 
-1. Create a folder in `aws/`, `azure/`, or `gcp/` named after the tutorial topic.
+1. Create `<cloud>/<topic>/<use-case>/`, reusing the topic folder if it already exists.
 2. Copy the [README template](templates/tutorial/README.md) into it, fill in every
    relevant section, and remove the sections you do not need.
 3. Add the code, dependency versions, and configuration examples without credentials.

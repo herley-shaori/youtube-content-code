@@ -7,7 +7,7 @@ from pathlib import Path
 from urllib.parse import urlencode
 
 os.environ["ASSISTANT_MODE"] = "local"
-sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "app"))
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 import handler  # noqa: E402
 import store  # noqa: E402
 

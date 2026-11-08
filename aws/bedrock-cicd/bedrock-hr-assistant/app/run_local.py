@@ -8,7 +8,7 @@ from http.server import BaseHTTPRequestHandler, HTTPServer
 from pathlib import Path
 
 os.environ.setdefault("COOKIE_SECURE", "0")  # Local HTTP has no TLS, so the cookie cannot be Secure.
-sys.path.insert(0, str(Path(__file__).parent / "app"))
+sys.path.insert(0, str(Path(__file__).parent / "src"))
 import handler  # noqa: E402
 
 PORT = int(os.environ.get("PORT", "8765"))

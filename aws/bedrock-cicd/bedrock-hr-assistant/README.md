@@ -2,7 +2,8 @@
 
 Companion code for a YouTube tutorial series by Herley Shaori. One small office app,
 the HR leave assistant of the fictional **Example Corp**, grows a little in every
-episode. This folder currently holds the app itself, ready to run on a laptop.
+episode. This folder holds both parts of the use case: the application code in
+`app/` and, from part 1 onwards, the infrastructure code in `terraform/`.
 
 > **Disclaimer:** Example Corp is a fictional company, and all names in this tutorial
 > (employees, accounts, and the company) are fictional. Any resemblance to real
@@ -76,7 +77,7 @@ Demo accounts (all names are fictional; demo passwords only):
 | `budi` | `6xb9p1gp` | employee |
 | `catur` | `fd6woo16` | hr |
 
-Authentication is deliberately simple: the accounts live in `app/store.py`, and the
+Authentication is deliberately simple: the accounts live in `app/src/store.py`, and the
 session is an HMAC-signed, `HttpOnly`, `SameSite=Strict` cookie that expires after
 8 hours. Leave data is kept in memory and resets on restart. This is a teaching demo,
 not a production identity or HR system.
@@ -86,7 +87,7 @@ not a production identity or HR system.
 Requirements: Python 3.11 or later. No packages to install and no AWS account needed.
 
 ```sh
-cd aws/bedrock-hr-assistant
+cd aws/bedrock-cicd/bedrock-hr-assistant/app
 python3 run_local.py
 ```
 
@@ -94,12 +95,12 @@ Open http://127.0.0.1:8765 and sign in with one of the demo accounts. Stop the s
 with `Ctrl+C`.
 
 By default the assistant runs in **local mode**: it answers with the most relevant
-section of `app/policy.md` and never calls AWS, so it is free. To try the real model,
+section of `app/src/policy.md` and never calls AWS, so it is free. To try the real model,
 install `boto3`, sign in to an AWS account with Bedrock access to Amazon Nova Lite in
 `ap-southeast-3`, and start the server with `ASSISTANT_MODE=bedrock`. Each question is
 then billed by Bedrock.
 
-Run the sanity tests (they never call AWS):
+Run the sanity tests from the same `app/` folder (they never call AWS):
 
 ```sh
 python3 -m unittest discover -s tests -v
@@ -108,20 +109,25 @@ python3 -m unittest discover -s tests -v
 ## Structure
 
 ```text
-bedrock-hr-assistant/
-├── app/                 # deployed as the Lambda package; handler: handler.lambda_handler
-│   ├── handler.py       # routing, sign-in, sessions (Function URL payload 2.0)
-│   ├── views.py         # HTML pages
-│   ├── store.py         # demo accounts and in-memory leave data
-│   ├── assistant.py     # local answers or Amazon Bedrock Converse API
-│   ├── prompt.md        # system prompt
-│   └── policy.md        # fictional leave policy
-├── run_local.py         # runs the handler on http://127.0.0.1:8765
-└── tests/               # sanity tests, no AWS calls
+aws/bedrock-cicd/                  # topic: CI/CD for Amazon Bedrock apps
+└── bedrock-hr-assistant/          # this use case
+    ├── README.md
+    ├── app/                       # application code
+    │   ├── src/                   # Lambda package; handler: handler.lambda_handler
+    │   │   ├── handler.py         # routing, sign-in, sessions (Function URL payload 2.0)
+    │   │   ├── views.py           # HTML pages
+    │   │   ├── store.py           # demo accounts and in-memory leave data
+    │   │   ├── assistant.py       # local answers or Amazon Bedrock Converse API
+    │   │   ├── prompt.md          # system prompt
+    │   │   └── policy.md          # fictional leave policy
+    │   ├── tests/                 # sanity tests, no AWS calls
+    │   └── run_local.py           # runs src/ on http://127.0.0.1:8765
+    └── terraform/                 # infrastructure code (GitHub and AWS), part 1
 ```
 
-Coming in episode 1: `terraform/` (GitHub and AWS resources) and the GitHub Actions
-workflows.
+Only `app/src/` is deployed to Lambda. Tests and the local runner stay out of the
+package. The GitHub Actions workflows live in `.github/workflows/` at the repository
+root, because GitHub only reads them from there.
 
 ## Configuration
 
@@ -131,7 +137,7 @@ workflows.
 | `MODEL_ID` | `amazon.nova-lite-v1:0` | Bedrock model or inference profile |
 | `AWS_REGION` | `ap-southeast-3` | Region for Bedrock calls |
 | `SESSION_SECRET` | random per start | HMAC key for session cookies; set it in Lambda |
-| `COOKIE_SECURE` | `1` (`0` in `run_local.py`) | Adds the `Secure` flag to the session cookie |
+| `COOKIE_SECURE` | `1` (`0` in `app/run_local.py`) | Adds the `Secure` flag to the session cookie |
 | `PORT` | `8765` | Local server port |
 
 ## Clean up
