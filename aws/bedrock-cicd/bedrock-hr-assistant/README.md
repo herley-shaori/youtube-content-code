@@ -1,9 +1,13 @@
-# HR leave assistant: CI/CD for an Amazon Bedrock app in Jakarta
+# CI/CD for LLM apps on Amazon Bedrock: HR assistant use case
 
-Companion code for a YouTube tutorial series by Herley Shaori. One small office app,
-the HR leave assistant of the fictional **Example Corp**, grows a little in every
-episode. This folder holds both parts of the use case: the application code in
-`app/` and, from part 1 onwards, the infrastructure code in `terraform/`.
+Companion code for a YouTube tutorial series by Herley Shaori about **how CI/CD should
+work for applications built on a large language model (LLM)**, using Amazon Bedrock
+in the Jakarta Region (`ap-southeast-3`). The HR leave assistant of the fictional
+**Example Corp** is only a wrapper that makes the use case concrete; any Lambda app
+that calls Bedrock fits the same pipeline.
+
+This folder holds both parts of the use case: the application code in `app/` and,
+from part 1 onwards, the infrastructure code in `terraform/`.
 
 > **Disclaimer:** Example Corp is a fictional company, and all names in this tutorial
 > (employees, accounts, and the company) are fictional. Any resemblance to real
@@ -13,28 +17,61 @@ Video: link not published yet.
 
 ## The problem
 
-We want an app that answers employee questions about leave with a model on
-Amazon Bedrock, running in the Jakarta Region (`ap-southeast-3`), and we want every
-change to reach AWS through an automated, safe pipeline. Several things get in the way:
+Classic CI/CD assumes that passing tests means the software works. An LLM app breaks
+that assumption:
 
-1. **CodePipeline in Jakarta cannot read GitHub directly.** AWS CodeConnections
-   (formerly CodeStar Connections) is not available in `ap-southeast-3`, so the usual
-   "GitHub source → CodeBuild → deploy" pipeline does not work there.
-2. **The code lives in a public repository.** Long-lived AWS access keys stored as
-   CI secrets can leak, and anyone can open a pull request from a fork.
-3. **Manual setup does not repeat well.** Clicking through GitHub environments,
-   secrets, IAM roles, and Lambda settings is hard to reproduce, review, and clean up.
-4. **A public endpoint costs money when abused.** Every question sent to Bedrock is
-   billed, and a demo URL can be called by anyone who finds it.
+1. **Answers vary.** The same question can get different wording on every run, so
+   exact-match tests break.
+2. **More than code changes behavior.** Editing the prompt, switching the model
+   version, or changing guardrails or knowledge data changes the answers as much as
+   a code change does.
+3. **Quality needs its own tests.** Passing unit tests does not tell you whether the
+   answers are correct, safe, and on topic.
+4. **Testing costs money.** Every model call made by a pipeline is billed.
 
-## What this tutorial achieves
+So how should a change to an LLM app reach production safely?
 
-- **GitHub Actions as the CI/CD engine.** Pull requests run lint and unit tests with
-  no AWS access; pushes to `master` deploy. No CodeBuild or CodePipeline is needed.
-- **No access keys.** GitHub Actions signs in to AWS with OpenID Connect (OIDC) and
-  receives short-lived credentials for one job. The IAM role trusts only this
-  repository's `aws` environment, which only `master` can deploy to, so forks cannot
-  assume it.
+## How LLM CI/CD should run
+
+1. **Change:** code, prompt, and model ID are versioned together in Git.
+2. **Fast tests:** every change runs unit tests with Bedrock mocked, so they are
+   quick and free.
+3. **Package:** code, prompt, and model configuration ship as one artifact.
+4. **Deploy to staging.**
+5. **Evaluate on staging:** a smoke test, an evaluation set, and safety tests call
+   the real model.
+6. **Quality gate:** promote only when the score holds and, for production, after
+   an approval.
+7. **Promote to production.**
+8. **Monitor real usage** and turn what you find into new test cases.
+
+Part 1 builds the backbone (steps 1 to 5 with a smoke test). Later parts add the rest.
+
+## Parts
+
+| Part | Pipeline stage added | Added to the app |
+| --- | --- | --- |
+| 1. CI/CD basics | Fast tests, package, deploy, smoke test | Leave policy Q&A with the policy in the system prompt |
+| 2. Guardrails as code | Safety tests in the pipeline | Block questions about other employees' salary or personal data |
+| 3. Evaluation gate | Evaluation set and quality gate | Reference Q&A dataset; the pipeline fails if answer quality drops |
+| 4. Bedrock Agents | Versions and aliases to promote | "Check my balance" and "request leave" actions backed by DynamoDB |
+| 5. Knowledge Base | Data pipeline for RAG documents | Move the policy from the prompt to documents in Amazon S3 |
+
+Each part gets a Git tag (for example `bedrock-hr-assistant-1`) so the code matches
+the video.
+
+## Building it on AWS in Jakarta
+
+Implementation choices for part 1, and why:
+
+- **GitHub Actions as the CI/CD engine.** AWS CodeConnections (formerly CodeStar
+  Connections) is not available in `ap-southeast-3`, so CodePipeline there cannot use
+  GitHub as a source. Pull requests run tests with no AWS access; pushes to `master`
+  deploy.
+- **No access keys.** The code is in a public repository, so long-lived keys are a
+  risk. GitHub Actions signs in to AWS with OpenID Connect (OIDC) and receives
+  short-lived credentials for one job. The IAM role trusts only this repository's
+  `aws` environment, which only `master` can deploy to, so forks cannot assume it.
 - **Everything as code with Terraform.** One configuration creates both sides: the
   GitHub environment, its secret and variables, the AWS OIDC provider, the IAM roles,
   the Lambda function, and its Function URL. One `terraform destroy` removes them all,
@@ -43,19 +80,6 @@ change to reach AWS through an automated, safe pipeline. Several things get in t
   calls Amazon Nova Lite on demand in Jakarta through the Bedrock Converse API.
 - **Cost under control.** Small reserved concurrency, input limits, and destroying
   the stack right after recording.
-
-## Episodes
-
-| Episode | Added to the app |
-| --- | --- |
-| 1. CI/CD basics | Leave policy Q&A with the policy in the system prompt |
-| 2. Guardrails as code | Block questions about other employees' salary or personal data |
-| 3. Evaluation gate | Reference Q&A dataset; the pipeline fails if answer quality drops |
-| 4. Bedrock Agents | "Check my balance" and "request leave" actions backed by DynamoDB |
-| 5. Knowledge Base | Move the policy from the prompt to documents in Amazon S3 (RAG) |
-
-Each episode gets a Git tag (for example `bedrock-hr-assistant-1`) so the code
-matches the video.
 
 ## The app
 
