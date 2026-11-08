@@ -1,0 +1,92 @@
+"""Sanity tests for the handler. They never call AWS. Run: python3 -m unittest discover tests"""
+import os
+import sys
+import unittest
+from datetime import date, timedelta
+from pathlib import Path
+from urllib.parse import urlencode
+
+os.environ["ASSISTANT_MODE"] = "local"
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "app"))
+import handler  # noqa: E402
+import store  # noqa: E402
+
+
+def call(method, path, form=None, cookie=None):
+    return handler.lambda_handler({
+        "rawPath": path,
+        "requestContext": {"http": {"method": method}},
+        "cookies": [cookie] if cookie else [],
+        "body": urlencode(form or {}),
+    }, None)
+
+
+def sign_in(username):
+    response = call("POST", "/login", {"username": username, "password": store.USERS[username]["password"]})
+    return response["cookies"][0].split(";")[0]
+
+
+def next_monday():
+    day = date.today() + timedelta(days=14)
+    return day + timedelta(days=-day.weekday())
+
+
+class AuthenticationTest(unittest.TestCase):
+    def test_pages_need_sign_in(self):
+        self.assertEqual(call("GET", "/home")["headers"]["Location"], "/login")
+
+    def test_wrong_password_is_rejected(self):
+        response = call("POST", "/login", {"username": "rina", "password": "wrong"})
+        self.assertEqual(response["statusCode"], 401)
+        self.assertEqual(response["cookies"], [])
+
+    def test_sign_in_shows_home(self):
+        response = call("GET", "/home", cookie=sign_in("rina"))
+        self.assertIn("Rina Wijaya", response["body"])
+
+    def test_tampered_session_is_rejected(self):
+        name, _, value = sign_in("rina").partition("=")
+        forged = f"{name}=sari{value[len('rina'):]}"
+        self.assertEqual(call("GET", "/home", cookie=forged)["statusCode"], 303)
+
+    def test_employee_cannot_open_approvals(self):
+        self.assertEqual(call("GET", "/approvals", cookie=sign_in("rina"))["statusCode"], 403)
+
+
+class AssistantTest(unittest.TestCase):
+    def test_answers_from_policy_without_aws(self):
+        response = call("POST", "/ask", {"question": "How many days off for my wedding?"}, sign_in("rina"))
+        self.assertIn("Marriage leave", response["body"])
+
+    def test_rejects_too_long_question(self):
+        response = call("POST", "/ask", {"question": "x" * 501}, sign_in("rina"))
+        self.assertEqual(response["statusCode"], 400)
+
+    def test_user_input_is_escaped(self):
+        response = call("POST", "/ask", {"question": "<script>alert(1)</script>"}, sign_in("rina"))
+        self.assertNotIn("<script>alert", response["body"])
+
+
+class LeaveRequestTest(unittest.TestCase):
+    def test_request_reduces_annual_balance(self):
+        before = store.annual_balance("andi")
+        start = next_monday()
+        form = {"type": "Annual", "start": start.isoformat(), "end": (start + timedelta(days=1)).isoformat()}
+        self.assertEqual(call("POST", "/leave", form, sign_in("andi"))["statusCode"], 303)
+        self.assertEqual(store.annual_balance("andi"), before - 2)
+
+    def test_request_over_balance_is_rejected(self):
+        start = next_monday()
+        form = {"type": "Annual", "start": start.isoformat(), "end": (start + timedelta(days=30)).isoformat()}
+        response = call("POST", "/leave", form, sign_in("rina"))
+        self.assertEqual(response["statusCode"], 400)
+        self.assertIn("annual leave days left", response["body"])
+
+    def test_hr_can_approve(self):
+        request_id = store.pending_requests()[0]["id"]
+        call("POST", "/approvals", {"id": request_id, "action": "approve"}, sign_in("sari"))
+        self.assertEqual(next(r for r in store.REQUESTS if r["id"] == request_id)["status"], "Approved")
+
+
+if __name__ == "__main__":
+    unittest.main()
