@@ -76,7 +76,8 @@ jobs:
         with:
           role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
           aws-region: ${{ vars.AWS_REGION }}
-      - run: aws lambda update-function-code --function-name "${{ vars.FUNCTION_NAME }}" --zip-file fileb://app.zip --output none
+      # The response contains the function ARN, and with it the account ID.
+      - run: aws lambda update-function-code --function-name "${{ vars.FUNCTION_NAME }}" --zip-file fileb://app.zip > /dev/null
       - run: aws lambda wait function-updated --function-name "${{ vars.FUNCTION_NAME }}"
 
   smoke-test:
