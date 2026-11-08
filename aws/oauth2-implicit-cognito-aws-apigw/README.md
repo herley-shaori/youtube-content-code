@@ -1,56 +1,58 @@
-# OAuth 2.0 Implicit Flow dengan Cognito dan API Gateway
+# OAuth 2.0 Implicit Flow with Cognito and API Gateway
 
-Contoh kode pendamping tutorial integrasi Amazon Cognito, API Gateway REST API,
-dan AWS Lambda menggunakan Terraform. Lambda menggunakan Python 3.12 dan
-mengembalikan respons `Hello, World!`.
+Companion code for a tutorial that integrates Amazon Cognito, an API Gateway REST API,
+and AWS Lambda with Terraform. The Lambda function uses Python 3.12 and returns
+`Hello, World!`.
 
 ## Video
 
-Tautan video belum dicantumkan.
+The video link is not published yet.
 
-## Prasyarat
+## Prerequisites
 
-- Terraform CLI dan akses untuk mengunduh provider AWS, Random, Local, serta Null.
-  Contoh lama ini belum menetapkan versi Terraform dan provider yang digunakan.
-- AWS CLI dengan kredensial akun latihan yang dapat mengelola resource contoh.
-- Utilitas `zip`, yang dipanggil oleh konfigurasi Terraform untuk mengemas Lambda.
-- Region AWS `ap-southeast-3` (Jakarta), sesuai `providers.tf`.
+- Terraform CLI with access to download the AWS, Random, Local, and Null providers.
+  This older example does not pin Terraform or provider versions.
+- AWS CLI with credentials for a practice account that can manage the example
+  resources.
+- The `zip` utility, which the Terraform configuration calls to package the Lambda
+  function.
+- AWS Region `ap-southeast-3` (Jakarta), as set in `providers.tf`.
 
-## Isi folder
+## Folder contents
 
-| File | Fungsi |
+| File | Purpose |
 | --- | --- |
-| `providers.tf` | Konfigurasi provider dan region AWS. |
-| `variables.tf` | Nama proyek yang dipakai untuk penamaan resource. |
-| `cognito.tf` | User pool, app client implicit flow, domain, dan pembuatan pengguna demo. |
-| `apigw.tf` | REST API, Cognito authorizer, integrasi Lambda, dan stage `dev`. |
-| `lambda.tf` | IAM role dan pengemasan serta deployment fungsi Lambda. |
-| `lambda_function.py` | Handler Python untuk respons contoh. |
-| `locals.tf` | Tag pada fungsi Lambda. |
+| `providers.tf` | Provider configuration and AWS Region. |
+| `variables.tf` | Project name used to name resources. |
+| `cognito.tf` | User pool, implicit-flow app client, domain, and demo user creation. |
+| `apigw.tf` | REST API, Cognito authorizer, Lambda integration, and `dev` stage. |
+| `lambda.tf` | IAM role, plus packaging and deployment of the Lambda function. |
+| `lambda_function.py` | Python handler for the sample response. |
+| `locals.tf` | Tags for the Lambda function. |
 
-## Konfigurasi
+## Configuration
 
-Baca file Terraform sebelum deployment. Nama proyek default adalah
-`oauth2-implicit-apigateway-authorizer`. Nama ini juga digunakan untuk domain
-Cognito sehingga mungkin perlu diganti dengan nama yang tersedia.
+Read the Terraform files before deploying. The default project name is
+`oauth2-implicit-apigateway-authorizer`. It is also used for the Cognito domain, so
+you may need to change it to a name that is still available.
 
-Kode yang ada memakai pengguna demo `herley@mailinator.com` di `cognito.tf` dan
-callback/logout URL Postman di konfigurasi app client. Ganti dengan nilai milik
-Anda sebelum mencoba. Jangan memakai contoh ini untuk kredensial pribadi atau
-pengguna produksi.
+The code uses the demo user `herley@mailinator.com` in `cognito.tf` and Postman
+callback and logout URLs in the app client configuration. Replace them with your own
+values before trying it. Do not use this example for personal credentials or
+production users.
 
-Anda dapat mengatur nama proyek melalui file lokal `terraform.tfvars`:
+You can set the project name in a local `terraform.tfvars` file:
 
 ```hcl
-project_name = "nama-proyek-unik-anda"
+project_name = "your-unique-project-name"
 ```
 
-File tersebut dan Terraform state diabaikan oleh Git. Gunakan profil AWS CLI atau
-mekanisme kredensial AWS lokal yang sesuai; jangan menulis access key di kode.
+Git ignores that file and the Terraform state. Use an AWS CLI profile or another
+local AWS credential mechanism; never write access keys in code.
 
-## Validasi dan deployment
+## Validate and deploy
 
-Jalankan dari folder tutorial ini:
+Run from this tutorial folder:
 
 ```sh
 cd aws/oauth2-implicit-cognito-aws-apigw
@@ -59,47 +61,47 @@ terraform validate
 terraform plan
 ```
 
-Tinjau hasil plan dan potensi biaya resource AWS. Jika konfigurasi sudah sesuai,
-jalankan deployment secara terpisah:
+Review the plan and the potential cost of the AWS resources. When the configuration
+is right, deploy as a separate step:
 
 ```sh
 terraform apply
 ```
 
-Deployment juga menjalankan AWS CLI untuk membuat pengguna Cognito demo dan
-utilitas `zip` untuk mengemas Lambda. Perintah di atas adalah panduan untuk
-penonton; resource AWS tidak otomatis dibuat dengan meng-clone repositori.
+The deployment also runs the AWS CLI to create the demo Cognito user and the `zip`
+utility to package the Lambda function. These commands are a guide for viewers;
+cloning the repository does not create any AWS resources.
 
-## Hasil yang diharapkan
+## Expected result
 
-Konfigurasi mendefinisikan endpoint `POST /serve` pada stage `dev`. Setelah
-menyelesaikan alur masuk Cognito dan memperoleh ID token yang valid untuk user
-pool terkait, kirim token melalui header `Authorization` saat memanggil endpoint
-API Gateway. Handler Lambda menghasilkan status `200` dengan body `Hello, World!`.
+The configuration defines a `POST /serve` endpoint on the `dev` stage. After you
+complete the Cognito sign-in flow and get a valid ID token for the user pool, send the
+token in the `Authorization` header when calling the API Gateway endpoint. The Lambda
+handler returns status `200` with the body `Hello, World!`.
 
-URL API dan detail app client dapat dilihat melalui konsol AWS; contoh ini belum
-menyediakan output Terraform untuk keduanya.
+Find the API URL and the app client details in the AWS console; this example does not
+provide Terraform outputs for them yet.
 
-## Pembersihan
+## Clean up
 
-Dari folder tutorial yang sama dan menggunakan state serta akun AWS yang sama:
+From the same tutorial folder, with the same state and AWS account:
 
 ```sh
 terraform plan -destroy
 terraform destroy
 ```
 
-Tinjau resource yang akan dihapus sebelum menyetujui. Periksa pengguna demo yang
-dibuat melalui AWS CLI jika deployment sempat gagal atau tidak selesai.
+Review the resources to be deleted before approving. If the deployment failed or did
+not finish, check for the demo user created through the AWS CLI.
 
-## Catatan dan keterbatasan
+## Notes and limitations
 
-- Ini adalah contoh lama dengan implicit flow, bukan implementasi aplikasi login
-  lengkap. Antarmuka login dan contoh HTTP client belum disertakan.
-- Password sementara pengguna demo dibuat secara acak dan disimpan dalam state;
-  output ditandai sensitif. Proses mengganti password awal belum diotomatisasi.
-- Pembuatan pengguna melalui `local-exec` belum memiliki penanganan pengguna yang
-  sudah ada. Periksa kondisi akun jika mengulang deployment yang gagal.
-- IAM role Lambda belum memasang kebijakan penulisan log CloudWatch.
-- Versi provider belum dipatok dan deployment contoh ini belum diverifikasi ulang.
-  Periksa kompatibilitas provider sebelum mengikuti demo.
+- This is an older implicit-flow example, not a complete sign-in application. It
+  does not include a sign-in UI or an HTTP client example.
+- The demo user's temporary password is generated randomly and stored in the state;
+  the output is marked sensitive. Changing the initial password is not automated.
+- Creating the user through `local-exec` does not handle an existing user. Check the
+  account state when you rerun a failed deployment.
+- The Lambda IAM role does not attach a policy for writing CloudWatch logs.
+- Provider versions are not pinned, and this deployment has not been re-verified.
+  Check provider compatibility before following the demo.

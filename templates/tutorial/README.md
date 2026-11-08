@@ -1,43 +1,43 @@
-# [Judul tutorial]
+# [Tutorial title]
 
-[Ringkasan singkat tentang apa yang dipelajari dan dibuat. Ganti seluruh placeholder
-sebelum menerbitkan tutorial ini.]
+[A short summary of what viewers learn and build. Replace every placeholder before
+publishing this tutorial.]
 
 ## Video
 
-[Tautan video YouTube, atau keterangan bahwa tautan belum tersedia.]
+[YouTube video link, or a note that the link is not published yet.]
 
-## Prasyarat
+## Prerequisites
 
-- [Runtime/tool dan versi yang digunakan.]
-- [Akun, akses, dan dependensi yang diperlukan.]
+- [Runtimes and tools, with the versions used.]
+- [Accounts, access, and dependencies needed.]
 
-## Isi folder
+## Folder contents
 
-[Jelaskan file utama dan subfolder yang relevan. Kode dapat berada langsung di
-folder ini; gunakan `app/`, `terraform/`, atau `scripts/` hanya jika diperlukan.]
+[Describe the main files and relevant subfolders. Code can sit directly in this
+folder; use `app/`, `terraform/`, or `scripts/` only when needed.]
 
-## Konfigurasi
+## Configuration
 
-[Jelaskan variabel, contoh konfigurasi, dan autentikasi tanpa mencantumkan rahasia.
-Jika memakai cloud, sebutkan region, resource, dan potensi biaya.]
+[Describe variables, configuration examples, and authentication without including
+secrets. For cloud tutorials, name the region, the resources, and the expected cost.]
 
-## Cara menjalankan
+## How to run
 
-[Tulis perintah berurutan dari dalam folder tutorial: instalasi dependensi,
-konfigurasi, lalu eksekusi. Untuk Terraform sertakan init, validate, plan, dan
-langkah apply secara terpisah setelah plan ditinjau.]
+[List the commands in order, run from inside the tutorial folder: install
+dependencies, configure, then run. For Terraform, include init, validate, and plan,
+and run apply as a separate step after the plan has been reviewed.]
 
-## Hasil yang diharapkan
+## Expected result
 
-[Berikan contoh output atau langkah verifikasi yang dapat diikuti penonton.]
+[Show sample output or verification steps that viewers can follow.]
 
-## Pembersihan
+## Clean up
 
-[Jelaskan cara menghentikan aplikasi dan menghapus resource yang dibuat. Jika
-memakai Terraform, jalankan destroy dari folder dan state yang sama. Hapus bagian
-ini jika tidak ada resource atau proses yang perlu dibersihkan.]
+[Explain how to stop the app and remove the resources it created. For Terraform, run
+destroy from the same folder and with the same state. Remove this section if there
+is nothing to clean up.]
 
-## Catatan dan keterbatasan
+## Notes and limitations
 
-[Jelaskan penyederhanaan demo, masalah yang diketahui, dan referensi bila ada.]
+[Describe demo simplifications, known issues, and references, if any.]

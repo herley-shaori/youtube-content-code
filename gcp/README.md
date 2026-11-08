@@ -1,3 +1,3 @@
 # Google Cloud
 
-Tutorial yang berfokus pada Google Cloud Platform. Setiap tutorial memiliki folder sendiri dalam format `kebab-case`.
+Tutorials focused on Google Cloud Platform. Each tutorial has its own folder in `kebab-case`.

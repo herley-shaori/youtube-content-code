@@ -1,106 +1,105 @@
-# Kode Pendamping Tutorial YouTube
+# YouTube Tutorial Companion Code
 
-Repositori ini berisi kode pendamping tutorial YouTube **Herley Shaori** untuk AWS,
-Azure, dan Google Cloud: kode aplikasi, script, konfigurasi Terraform, dan contoh
-teknis lainnya. Setelah menonton video, Anda dapat membuka folder tutorial terkait
-untuk mempelajari dan mencoba kodenya.
+This repository holds the companion code for **Herley Shaori**'s YouTube tutorials on
+AWS, Azure, and Google Cloud: application code, scripts, Terraform configurations,
+and other technical examples. After watching a video, open the matching tutorial
+folder to study and try the code.
 
-## Daftar tutorial
+## Tutorials
 
-| Tutorial | Teknologi | Kode dan panduan | Video |
+| Tutorial | Technology | Code and guide | Video |
 | --- | --- | --- | --- |
-| OAuth 2.0 implicit flow dengan Cognito dan API Gateway | AWS, Terraform, Python | [Buka tutorial](aws/oauth2-implicit-cognito-aws-apigw/) | Tautan belum dicantumkan |
+| OAuth 2.0 implicit flow with Cognito and API Gateway | AWS, Terraform, Python | [Open tutorial](aws/oauth2-implicit-cognito-aws-apigw/) | Not published yet |
 | HR leave assistant: CI/CD for an Amazon Bedrock app in Jakarta | AWS, Amazon Bedrock, Lambda, Python | [Open tutorial](aws/bedrock-hr-assistant/) | Not published yet |
 
-Tautan video akan ditambahkan setelah URL video terkait tersedia. Setiap folder
-memiliki README sendiri yang menjelaskan prasyarat, konfigurasi, cara menjalankan,
-dan cara membersihkan resource jika diperlukan.
+Video links are added once each video is published. Every folder has its own README
+that covers prerequisites, configuration, how to run it, and how to clean up any
+resources it creates.
 
-## Mulai dari sini
+## Start here
 
 ```sh
 git clone https://github.com/herley-shaori/youtube-content-code.git
 cd youtube-content-code
 ```
 
-1. Pilih tutorial dari tabel di atas atau tautan pada deskripsi video.
-2. Baca README di folder tutorial tersebut.
-3. Siapkan dependensi dan konfigurasi yang disebutkan di sana.
-4. Jalankan perintah dari dalam folder tutorial, bukan dari root repositori.
+1. Pick a tutorial from the table above or from the link in the video description.
+2. Read the README in that tutorial folder.
+3. Prepare the dependencies and configuration it lists.
+4. Run commands from inside the tutorial folder, not from the repository root.
 
-Tutorial berdiri sendiri. Anda tidak perlu memasang dependensi seluruh repositori
-atau menjalankan seluruh contoh sekaligus.
+Tutorials are independent. You do not need to install the dependencies of the whole
+repository or run every example at once.
 
-## Struktur repositori
+## Repository structure
 
 ```text
 .
 ├── README.md
-├── .githooks/                        # pemeriksa kredensial sebelum commit
-├── .github/workflows/                # pemindaian kredensial di GitHub Actions
+├── .githooks/                        # credential checks before each commit
+├── .github/workflows/                # credential scanning in GitHub Actions
 ├── templates/
 │   └── tutorial/
-│       └── README.md                 # template dokumentasi tutorial baru
+│       └── README.md                 # README template for new tutorials
 ├── aws/
-│   └── oauth2-implicit-cognito-aws-apigw/  # satu folder untuk satu tutorial
-│       ├── README.md
-│       ├── *.tf                      # konfigurasi infrastruktur
-│       └── lambda_function.py        # kode aplikasi contoh
+│   ├── oauth2-implicit-cognito-aws-apigw/  # one folder per tutorial
+│   └── bedrock-hr-assistant/
 ├── azure/
 └── gcp/
 ```
 
-Setiap tutorial ditempatkan di folder cloud yang dibahas: `aws/`, `azure/`, atau `gcp/`.
-Tutorial baru menggunakan folder dengan nama deskriptif dalam format `kebab-case`,
-misalnya `python-rest-api` atau `terraform-aws-vpc`. Kode sederhana dapat ditempatkan
-langsung dalam folder tutorial. Jika tutorial menggabungkan banyak komponen,
-gunakan subfolder seperti `app/`, `terraform/`, atau `scripts/` sesuai kebutuhan.
-Terraform bukan syarat: susunan file mengikuti teknologi yang dibahas.
+Each tutorial lives in the folder of the cloud it covers: `aws/`, `azure/`, or `gcp/`.
+New tutorials use a descriptive `kebab-case` folder name, for example
+`python-rest-api` or `terraform-aws-vpc`. Simple code can sit directly in the
+tutorial folder. When a tutorial combines several components, use subfolders such
+as `app/`, `terraform/`, or `scripts/`. Terraform is not required: the layout follows
+the technology the tutorial covers.
 
-## Menambahkan tutorial
+## Adding a tutorial
 
-1. Buat folder baru di `aws/`, `azure/`, atau `gcp/` dengan nama topik tutorial.
-2. Salin [template README](templates/tutorial/README.md) ke folder tersebut dan
-   lengkapi semua bagian yang relevan; hapus bagian yang tidak diperlukan.
-3. Tambahkan kode, versi dependensi, dan contoh konfigurasi tanpa kredensial.
-4. Cantumkan URL video yang sebenarnya pada README tutorial dan tabel di atas.
-   Jika belum tersedia, tulis bahwa tautannya belum dicantumkan.
-5. Jelaskan hasil yang diharapkan, keterbatasan contoh, dan cara membersihkan
-   resource yang dibuat.
-6. Cantumkan tautan langsung ke folder tutorial pada deskripsi YouTube agar
-   penonton tidak perlu mencari kode dari halaman utama.
+1. Create a folder in `aws/`, `azure/`, or `gcp/` named after the tutorial topic.
+2. Copy the [README template](templates/tutorial/README.md) into it, fill in every
+   relevant section, and remove the sections you do not need.
+3. Add the code, dependency versions, and configuration examples without credentials.
+4. Add the real video URL to the tutorial README and to the table above. If the video
+   is not out yet, say that the link is not published yet.
+5. Describe the expected result, the limits of the example, and how to clean up the
+   resources it creates.
+6. Put a direct link to the tutorial folder in the YouTube description so viewers do
+   not have to search for the code.
 
-Untuk versi kode yang perlu tetap cocok dengan video tertentu, tautkan ke commit
-atau tag yang sesuai saat video dipublikasikan.
+To keep the code matching a specific video, link to the commit or tag that was
+current when the video was published. Tags use the format `<use-case>-<N>`, for
+example `bedrock-hr-assistant-1`.
 
-## Konfigurasi dan resource
+## Configuration and resources
 
-- Gunakan kredensial milik Anda melalui mekanisme autentikasi teknologi terkait.
-  Jangan menyimpan token, password, file `.env`, atau Terraform state di Git.
-- Simpan contoh konfigurasi sebagai `.env.example` atau `terraform.tfvars.example`
-  dengan nilai placeholder dan penjelasan variabel.
-- Ganti account ID, subscription ID, tenant ID, project ID, alamat IP, dan email
-  dengan placeholder sebelum commit.
-- Contoh cloud dapat membuat resource berbayar. Baca konfigurasi dan hasil plan
-  sebelum deployment; ikuti panduan pembersihan setelah selesai.
-- Setiap contoh merupakan bahan pembelajaran. README tutorial menjelaskan batasan
-  yang perlu dipertimbangkan sebelum mengadaptasinya untuk penggunaan lain.
+- Use your own credentials through the authentication mechanism of the technology.
+  Never store tokens, passwords, `.env` files, or Terraform state in Git.
+- Keep configuration examples as `.env.example` or `terraform.tfvars.example` with
+  placeholder values and an explanation of each variable.
+- Replace account IDs, subscription IDs, tenant IDs, project IDs, IP addresses, and
+  email addresses with placeholders before committing.
+- Cloud examples can create billable resources. Read the configuration and the plan
+  output before deploying, and follow the clean-up steps when you are done.
+- Every example is learning material. Each tutorial README explains the limits to
+  consider before adapting it for other uses.
 
-## Pemeriksaan kredensial
+## Credential checks
 
-Repositori ini publik. Setiap push dan pull request dipindai oleh
-[Gitleaks](https://github.com/gitleaks/gitleaks) melalui GitHub Actions, dan
-GitHub secret scanning dengan push protection aktif. Untuk memeriksa sebelum commit
-di komputer Anda, pasang Gitleaks lalu aktifkan hook repositori ini:
+This repository is public. Every push and pull request is scanned by
+[Gitleaks](https://github.com/gitleaks/gitleaks) in GitHub Actions, and GitHub secret
+scanning with push protection is enabled. To check before committing on your own
+machine, install Gitleaks and enable this repository's hooks:
 
 ```sh
 brew install gitleaks
 git config core.hooksPath .githooks
 ```
 
-Hook `pre-commit` menolak file `.env`, Terraform state, file `.tfvars`, private key,
-dan file kredensial cloud, lalu memindai perubahan dengan Gitleaks. Selain aturan
-bawaan Gitleaks, [`.gitleaks.toml`](.gitleaks.toml) juga menolak AWS account ID,
-Azure subscription/tenant ID, dan GCP project ID. Gunakan variabel, data source
-seperti `aws_caller_identity`, atau placeholder seperti `123456789012`. Untuk memindai
-seluruh riwayat secara manual, jalankan `gitleaks git .` dari root repositori.
+The `pre-commit` hook rejects `.env` files, Terraform state, `.tfvars` files, private
+keys, and cloud credential files, then scans the change with Gitleaks. On top of the
+default Gitleaks rules, [`.gitleaks.toml`](.gitleaks.toml) also rejects AWS account
+IDs, Azure subscription and tenant IDs, and GCP project IDs. Use variables, data
+sources such as `aws_caller_identity`, or placeholders such as `123456789012`. To scan
+the whole history manually, run `gitleaks git .` from the repository root.

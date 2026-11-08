@@ -1,3 +1,3 @@
 # Azure
 
-Tutorial yang berfokus pada Microsoft Azure. Setiap tutorial memiliki folder sendiri dalam format `kebab-case`.
+Tutorials focused on Microsoft Azure. Each tutorial has its own folder in `kebab-case`.
