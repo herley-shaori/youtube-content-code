@@ -10,7 +10,7 @@ untuk mempelajari dan mencoba kodenya.
 | Tutorial | Teknologi | Kode dan panduan | Video |
 | --- | --- | --- | --- |
 | OAuth 2.0 implicit flow dengan Cognito dan API Gateway | AWS, Terraform, Python | [Buka tutorial](aws/oauth2-implicit-cognito-aws-apigw/) | Tautan belum dicantumkan |
-| HR leave assistant: CI/CD for an Amazon Bedrock app in Jakarta | AWS, Amazon Bedrock, Lambda, Python | [Open tutorial](aws/bedrock-hr-leave-assistant/) | Not published yet |
+| HR leave assistant: CI/CD for an Amazon Bedrock app in Jakarta | AWS, Amazon Bedrock, Lambda, Python | [Open tutorial](aws/bedrock-hr-assistant/) | Not published yet |
 
 Tautan video akan ditambahkan setelah URL video terkait tersedia. Setiap folder
 memiliki README sendiri yang menjelaskan prasyarat, konfigurasi, cara menjalankan,

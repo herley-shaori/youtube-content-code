@@ -53,7 +53,7 @@ change to reach AWS through an automated, safe pipeline. Several things get in t
 | 4. Bedrock Agents | "Check my balance" and "request leave" actions backed by DynamoDB |
 | 5. Knowledge Base | Move the policy from the prompt to documents in Amazon S3 (RAG) |
 
-Each episode gets a Git tag (for example `hr-leave-assistant-ep1`) so the code
+Each episode gets a Git tag (for example `bedrock-hr-assistant-1`) so the code
 matches the video.
 
 ## The app
@@ -86,7 +86,7 @@ not a production identity or HR system.
 Requirements: Python 3.11 or later. No packages to install and no AWS account needed.
 
 ```sh
-cd aws/bedrock-hr-leave-assistant
+cd aws/bedrock-hr-assistant
 python3 run_local.py
 ```
 
@@ -108,7 +108,7 @@ python3 -m unittest discover -s tests -v
 ## Structure
 
 ```text
-bedrock-hr-leave-assistant/
+bedrock-hr-assistant/
 ├── app/                 # deployed as the Lambda package; handler: handler.lambda_handler
 │   ├── handler.py       # routing, sign-in, sessions (Function URL payload 2.0)
 │   ├── views.py         # HTML pages
