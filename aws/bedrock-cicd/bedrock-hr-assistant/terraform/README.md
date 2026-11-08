@@ -50,6 +50,10 @@ terraform apply
 
 Notes:
 
+- Requests rejected by the app still run the function and are billed. Set
+  `reserved_concurrency = 0` while the app is not in use, so AWS throttles every call
+  before the function runs. Set it back to `2` before you deploy or record, otherwise
+  the smoke test fails.
 - An AWS account can hold only one GitHub OIDC provider. Set
   `create_github_oidc_provider = false` if yours already has one.
 - A Cloudflare zone has only one ruleset for WAF custom rules. If your zone already
