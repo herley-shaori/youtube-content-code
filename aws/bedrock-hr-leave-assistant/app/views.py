@@ -17,7 +17,10 @@ table{width:100%;border-collapse:collapse}th,td{text-align:left;padding:8px;bord
 .Pending{background:#fef0c7;color:#93370d}.Rejected{background:#fee4e2;color:#912018}
 .error{padding:10px;border-radius:6px;background:#fee4e2;color:#912018}.note{font-size:13px;color:#52606d}
 .answer{white-space:pre-wrap;background:#eef4fb;border-radius:6px;padding:12px}
+footer{max-width:880px;margin:0 auto 24px;padding:0 16px;font-size:12px;color:#52606d}
 """
+
+FOOTER = "Example Corp is a fictional company, and all names in this app are fictional. Any resemblance to real companies or people is coincidental."
 
 NAV = [("/home", "Home"), ("/ask", "Ask HR"), ("/leave", "My leave"), ("/policy", "Leave policy")]
 
@@ -32,7 +35,7 @@ def layout(title, body, me=None, active=""):
     return (f'<!doctype html><html lang="en"><head><meta charset="utf-8">'
             f'<meta name="viewport" content="width=device-width,initial-scale=1">'
             f'<title>{e(title)} | Example Corp HR</title><style>{CSS}</style></head>'
-            f'<body><header><strong>Example Corp HR</strong>{nav}</header><main><h1>{e(title)}</h1>{body}</main></body></html>')
+            f'<body><header><strong>Example Corp HR</strong>{nav}</header><main><h1>{e(title)}</h1>{body}</main><footer>{FOOTER}</footer></body></html>')
 
 
 def _error(message):
@@ -50,7 +53,7 @@ def login_page(users, error=None, username=""):
 <label for="username">Username</label><input id="username" name="username" value="{e(username)}" required autofocus>
 <label for="password">Password</label><input id="password" name="password" type="password" required>
 <button>Sign in</button></form></div>
-<div class="card"><p class="note">Demo accounts for this tutorial. The company and people are fictional.</p>
+<div class="card"><p class="note">Demo accounts for this tutorial. Example Corp and all names are fictional.</p>
 <table><tr><th>Username</th><th>Password</th><th>Role</th></tr>{rows}</table></div>"""
     return layout("Sign in", body)
 

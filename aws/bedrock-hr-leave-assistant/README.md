@@ -4,6 +4,10 @@ Companion code for a YouTube tutorial series by Herley Shaori. One small office 
 the HR leave assistant of the fictional **Example Corp**, grows a little in every
 episode. This folder currently holds the app itself, ready to run on a laptop.
 
+> **Disclaimer:** Example Corp is a fictional company, and all names in this tutorial
+> (employees, accounts, and the company) are fictional. Any resemblance to real
+> companies or people is coincidental.
+
 Video: link not published yet.
 
 ## The problem
@@ -64,7 +68,7 @@ Sign in with a demo account, then use the menu:
 | Leave policy | The policy that the assistant answers from |
 | Approvals | HR only: approve or reject pending requests |
 
-Demo accounts (fictional people, demo passwords only):
+Demo accounts (all names are fictional; demo passwords only):
 
 | Username | Password | Role |
 | --- | --- | --- |
