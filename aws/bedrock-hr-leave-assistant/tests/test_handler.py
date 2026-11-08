@@ -36,55 +36,55 @@ class AuthenticationTest(unittest.TestCase):
         self.assertEqual(call("GET", "/home")["headers"]["Location"], "/login")
 
     def test_wrong_password_is_rejected(self):
-        response = call("POST", "/login", {"username": "rina", "password": "wrong"})
+        response = call("POST", "/login", {"username": "andi", "password": "wrong"})
         self.assertEqual(response["statusCode"], 401)
         self.assertEqual(response["cookies"], [])
 
     def test_sign_in_shows_home(self):
-        response = call("GET", "/home", cookie=sign_in("rina"))
-        self.assertIn("Rina Wijaya", response["body"])
+        response = call("GET", "/home", cookie=sign_in("andi"))
+        self.assertIn("Andi Pratama", response["body"])
 
     def test_tampered_session_is_rejected(self):
-        name, _, value = sign_in("rina").partition("=")
-        forged = f"{name}=sari{value[len('rina'):]}"
+        name, _, value = sign_in("andi").partition("=")
+        forged = f"{name}=catur{value[len('andi'):]}"
         self.assertEqual(call("GET", "/home", cookie=forged)["statusCode"], 303)
 
     def test_employee_cannot_open_approvals(self):
-        self.assertEqual(call("GET", "/approvals", cookie=sign_in("rina"))["statusCode"], 403)
+        self.assertEqual(call("GET", "/approvals", cookie=sign_in("andi"))["statusCode"], 403)
 
 
 class AssistantTest(unittest.TestCase):
     def test_answers_from_policy_without_aws(self):
-        response = call("POST", "/ask", {"question": "How many days off for my wedding?"}, sign_in("rina"))
+        response = call("POST", "/ask", {"question": "How many days off for my wedding?"}, sign_in("andi"))
         self.assertIn("Marriage leave", response["body"])
 
     def test_rejects_too_long_question(self):
-        response = call("POST", "/ask", {"question": "x" * 501}, sign_in("rina"))
+        response = call("POST", "/ask", {"question": "x" * 501}, sign_in("andi"))
         self.assertEqual(response["statusCode"], 400)
 
     def test_user_input_is_escaped(self):
-        response = call("POST", "/ask", {"question": "<script>alert(1)</script>"}, sign_in("rina"))
+        response = call("POST", "/ask", {"question": "<script>alert(1)</script>"}, sign_in("andi"))
         self.assertNotIn("<script>alert", response["body"])
 
 
 class LeaveRequestTest(unittest.TestCase):
     def test_request_reduces_annual_balance(self):
-        before = store.annual_balance("andi")
+        before = store.annual_balance("budi")
         start = next_monday()
         form = {"type": "Annual", "start": start.isoformat(), "end": (start + timedelta(days=1)).isoformat()}
-        self.assertEqual(call("POST", "/leave", form, sign_in("andi"))["statusCode"], 303)
-        self.assertEqual(store.annual_balance("andi"), before - 2)
+        self.assertEqual(call("POST", "/leave", form, sign_in("budi"))["statusCode"], 303)
+        self.assertEqual(store.annual_balance("budi"), before - 2)
 
     def test_request_over_balance_is_rejected(self):
         start = next_monday()
         form = {"type": "Annual", "start": start.isoformat(), "end": (start + timedelta(days=30)).isoformat()}
-        response = call("POST", "/leave", form, sign_in("rina"))
+        response = call("POST", "/leave", form, sign_in("andi"))
         self.assertEqual(response["statusCode"], 400)
         self.assertIn("annual leave days left", response["body"])
 
     def test_hr_can_approve(self):
         request_id = store.pending_requests()[0]["id"]
-        call("POST", "/approvals", {"id": request_id, "action": "approve"}, sign_in("sari"))
+        call("POST", "/approvals", {"id": request_id, "action": "approve"}, sign_in("catur"))
         self.assertEqual(next(r for r in store.REQUESTS if r["id"] == request_id)["status"], "Approved")
 
 

@@ -9,17 +9,17 @@ LEAVE_TYPES = ["Annual", "Sick", "Maternity", "Paternity", "Marriage", "Bereavem
 
 # Demo accounts for a fictional company. Never put real credentials in this repository.
 USERS = {
-    "rina": {"name": "Rina Wijaya", "role": "employee", "password": "v6xi22xw"},
-    "andi": {"name": "Andi Pratama", "role": "employee", "password": "6xb9p1gp"},
-    "sari": {"name": "Sari Hidayat", "role": "hr", "password": "fd6woo16"},
+    "andi": {"name": "Andi Pratama", "role": "employee", "password": "v6xi22xw"},
+    "budi": {"name": "Budi Santoso", "role": "employee", "password": "6xb9p1gp"},
+    "catur": {"name": "Catur Wibowo", "role": "hr", "password": "fd6woo16"},
 }
 
 REQUESTS = [
-    {"id": 1, "user": "rina", "type": "Annual", "start": date(2026, 3, 16), "end": date(2026, 3, 17),
+    {"id": 1, "user": "andi", "type": "Annual", "start": date(2026, 3, 16), "end": date(2026, 3, 17),
      "days": 2, "reason": "Family trip", "status": "Approved"},
-    {"id": 2, "user": "rina", "type": "Sick", "start": date(2026, 6, 8), "end": date(2026, 6, 8),
+    {"id": 2, "user": "andi", "type": "Sick", "start": date(2026, 6, 8), "end": date(2026, 6, 8),
      "days": 1, "reason": "Flu", "status": "Approved"},
-    {"id": 3, "user": "andi", "type": "Annual", "start": date(2026, 12, 21), "end": date(2026, 12, 23),
+    {"id": 3, "user": "budi", "type": "Annual", "start": date(2026, 12, 21), "end": date(2026, 12, 23),
      "days": 3, "reason": "Year-end holiday", "status": "Pending"},
 ]
 
