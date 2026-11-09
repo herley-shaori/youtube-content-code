@@ -68,14 +68,23 @@ jobs:
     permissions:
       contents: read
       id-token: write
+    # The AWS CLI assumes the role by itself from these variables and the token file.
+    # aws-actions/configure-aws-credentials is not used because it always prints the
+    # role ID, which encodes the account ID, and these logs are public.
+    env:
+      AWS_ROLE_ARN: ${{ secrets.AWS_ROLE_ARN }}
+      AWS_REGION: ${{ vars.AWS_REGION }}
     steps:
       - uses: actions/download-artifact@v4
         with:
           name: lambda-package
-      - uses: aws-actions/configure-aws-credentials@v4
-        with:
-          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
-          aws-region: ${{ vars.AWS_REGION }}
+      - name: Get a GitHub OIDC token for AWS
+        run: |
+          echo "::add-mask::$(echo "$AWS_ROLE_ARN" | cut -d: -f5)"
+          curl -sSf -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
+            "$ACTIONS_ID_TOKEN_REQUEST_URL&audience=sts.amazonaws.com" \
+            | jq -r .value > "$RUNNER_TEMP/aws-oidc-token"
+          echo "AWS_WEB_IDENTITY_TOKEN_FILE=$RUNNER_TEMP/aws-oidc-token" >> "$GITHUB_ENV"
       # The response contains the function ARN, and with it the account ID.
       - run: aws lambda update-function-code --function-name "${{ vars.FUNCTION_NAME }}" --zip-file fileb://app.zip > /dev/null
       - run: aws lambda wait function-updated --function-name "${{ vars.FUNCTION_NAME }}"
