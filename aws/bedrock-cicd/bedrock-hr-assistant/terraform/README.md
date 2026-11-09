@@ -9,35 +9,40 @@ all.
 | Side | Resources |
 | --- | --- |
 | AWS | IAM OIDC provider for GitHub Actions (optional), deploy role for GitHub Actions, Lambda role, log group (7 days), Lambda function built from `../app/src`, Function URL |
-| Cloudflare | WAF custom rule that blocks the app hostname, proxied CNAME from the hostname to the Function URL |
+| Cloudflare | Proxied DNS record, Worker that forwards requests to the Function URL, WAF custom rule that blocks the hostname until `public_access = true`, rate limit on `/ask` |
 | GitHub | Environment `ai-stg` that only tags matching `bedrock-hr-assistant-stg-v*` can use, secrets `AWS_ROLE_ARN`, `FUNCTION_URL`, `ORIGIN_SECRET`, variables `AWS_REGION`, `FUNCTION_NAME` |
 
 ## How the app is protected
 
 Visitors may only reach the app through Cloudflare:
 
-1. **Cloudflare blocks everything for now.** The WAF custom rule blocks every request
-   for the hostname, and the DNS record is proxied, so the Function URL host is never
-   exposed through DNS.
+1. **Cloudflare is the only front door.** The DNS record is proxied, so the Function
+   URL host is never exposed through DNS. With `public_access = false` (the default) a
+   WAF custom rule blocks every request for the hostname.
 2. **The Function URL rejects direct calls.** Cloudflare cannot sign AWS requests, so
    the URL uses `authorization_type = "NONE"`. Instead, the app requires the header
-   `x-origin-verify` with a random secret that only Terraform, Lambda, and (later)
-   Cloudflare know. Any request without it gets `403 Forbidden` before any app code
+   `x-origin-verify` with a random secret that only Terraform, Lambda, and the
+   Cloudflare Worker know. Any request without it gets `403 Forbidden` before any app code
    runs. If the secret is missing on Lambda, the app rejects everything.
 3. **Small blast radius.** Reserved concurrency (default 2) caps parallel runs and the
    Bedrock bill. The Lambda role can only write its own logs and call one model. The
    deploy role can only replace the code of this one function, and only jobs in the
    repository's GitHub environment can assume it.
 
-Opening the app later takes two more Cloudflare rules, added here when needed: a
-request header transform rule that adds `x-origin-verify`, and an origin rule that
-sets the `Host` header to the Function URL host. Then the block rule is removed.
+A Function URL only answers to its own host name, and the Cloudflare Free plan cannot
+change the `Host` header with a rule, so `worker.js` forwards each request with the
+right host and the secret header. The Workers free tier allows 100,000 requests per day.
+
+With `public_access = true`, anyone can sign in with the demo accounts and ask the
+model, which is billed. A rate limit allows 3 questions per 10 seconds for each client,
+but a distributed attack can still reach the model, capped only by reserved
+concurrency. Open the app only while you need it.
 
 ## Run it
 
 Requirements: Terraform 1.10 or later, an AWS profile that can reach the target
-account, and a Cloudflare API token with **Zone DNS Edit** and **Zone WAF Edit** on the
-zone. A GitHub token with admin access to the repository.
+account, and a Cloudflare API token with **Zone Read**, **DNS Edit**, **Zone WAF Edit**, and
+**Workers Routes Edit** on the zone, plus **Workers Scripts Edit** on the account. A GitHub token with admin access to the repository.
 
 ```sh
 cp terraform.tfvars.example terraform.tfvars   # fill in your values

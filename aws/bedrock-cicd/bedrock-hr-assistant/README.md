@@ -78,9 +78,9 @@ Implementation choices for part 1, and why:
   Nothing is changed by hand in AWS or Cloudflare. One `terraform destroy` removes
   them all, while the code stays in this repository.
 - **Cloudflare is the only way in.** The public hostname is a proxied Cloudflare
-  record. Direct calls to the Function URL get `403` because they lack a secret
-  header that only Cloudflare adds. Until the app is ready, a Cloudflare WAF rule
-  blocks all traffic. See [terraform/README.md](terraform/README.md).
+  record served by a small Cloudflare Worker. Direct calls to the Function URL get
+  `403` because they lack a secret header that only the Worker adds. A WAF rule blocks
+  all traffic until `public_access = true`, and a rate limit protects the model. See [terraform/README.md](terraform/README.md).
 - **A simple app served by Lambda.** The Lambda function serves the web pages and
   calls Amazon Nova Lite on demand in Jakarta through the Bedrock Converse API.
 - **Cost under control.** Small reserved concurrency, input limits, and destroying

@@ -11,5 +11,8 @@ create_github_oidc_provider = true
 github_repository  = "your-user/youtube-content-code"
 github_environment = "ai-stg"
 
+# true opens the app to everyone through Cloudflare.
+public_access = false
+
 cloudflare_zone_name = "example.com"
 hostname             = "hr-assistant.example.com"

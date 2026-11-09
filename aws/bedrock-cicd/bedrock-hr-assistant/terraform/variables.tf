@@ -60,8 +60,26 @@ variable "github_deploy_tag_pattern" {
   default     = "bedrock-hr-assistant-stg-v*"
 }
 
+variable "public_access" {
+  description = "False keeps the Cloudflare block rule on. True opens the app to everyone."
+  type        = bool
+  default     = false
+}
+
+variable "origin_header" {
+  description = "Request header that carries the origin secret. Must match ORIGIN_HEADER in the app."
+  type        = string
+  default     = "x-origin-verify"
+}
+
+variable "ask_requests_per_10s" {
+  description = "Questions one client may send to the model per 10 seconds."
+  type        = number
+  default     = 3
+}
+
 variable "cloudflare_api_token" {
-  description = "Token with DNS Edit and Zone WAF Edit on the zone. Pass it as TF_VAR_cloudflare_api_token."
+  description = "Token with Zone Read, DNS, Zone WAF and Workers permissions. Pass it as TF_VAR_cloudflare_api_token."
   type        = string
   sensitive   = true
   ephemeral   = true
