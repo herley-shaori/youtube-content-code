@@ -52,6 +52,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      # The app shows this in its footer, for example stg-v1.4.
+      - run: echo "${GITHUB_REF_NAME#bedrock-hr-assistant-}" > version.txt
+        working-directory: ${{ env.APP_DIR }}/src
       - run: zip -r "$GITHUB_WORKSPACE/app.zip" . -x '__pycache__/*'
         working-directory: ${{ env.APP_DIR }}/src
       - uses: actions/upload-artifact@v4

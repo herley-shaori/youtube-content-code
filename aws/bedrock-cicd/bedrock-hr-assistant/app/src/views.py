@@ -1,5 +1,10 @@
 """HTML pages. Every value that comes from a user goes through e() before it reaches the page."""
 from html import escape as e
+from pathlib import Path
+
+# The deploy workflow writes the tag name here, so every page shows which release runs.
+_VERSION_FILE = Path(__file__).with_name("version.txt")
+VERSION = _VERSION_FILE.read_text().strip() if _VERSION_FILE.exists() else "local"
 
 CSS = """
 *{box-sizing:border-box}body{margin:0;font:15px/1.6 system-ui,sans-serif;color:#1f2933;background:#f4f6f8}
@@ -35,7 +40,7 @@ def layout(title, body, me=None, active=""):
     return (f'<!doctype html><html lang="en"><head><meta charset="utf-8">'
             f'<meta name="viewport" content="width=device-width,initial-scale=1">'
             f'<title>{e(title)} | Example Corp HR</title><style>{CSS}</style></head>'
-            f'<body><header><strong>Example Corp HR</strong>{nav}</header><main><h1>{e(title)}</h1>{body}</main><footer>{FOOTER}</footer></body></html>')
+            f'<body><header><strong>Example Corp HR</strong>{nav}</header><main><h1>{e(title)}</h1>{body}</main><footer><strong>Version {e(VERSION)}</strong><br>{FOOTER}</footer></body></html>')
 
 
 def _error(message):
