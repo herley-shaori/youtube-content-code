@@ -58,6 +58,10 @@ class AssistantTest(unittest.TestCase):
         response = call("POST", "/ask", {"question": "How many days off for my wedding?"}, sign_in("andi"))
         self.assertIn("Marriage leave", response["body"])
 
+    def test_answers_work_from_home(self):
+        response = call("POST", "/ask", {"question": "Can I work from home?"}, sign_in("andi"))
+        self.assertIn("Work from home", response["body"])
+
     def test_rejects_too_long_question(self):
         response = call("POST", "/ask", {"question": "x" * 501}, sign_in("andi"))
         self.assertEqual(response["statusCode"], 400)

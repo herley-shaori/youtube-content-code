@@ -24,6 +24,10 @@ Employees get 3 paid days for their own wedding.
 
 Employees get 2 paid days when a spouse, child, parent, or parent-in-law passes away.
 
+## Work from home
+
+After 3 months of service, employees may work from home up to 2 days per week with their manager's approval. Work from home days are working days, so they do not reduce annual leave.
+
 ## How to request leave
 
 Submit a request in this app at least 7 days before the first day of leave. HR approves or rejects it within 3 working days.
