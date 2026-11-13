@@ -1,6 +1,6 @@
 # Terraform: bedrock-hr-assistant
 
-Infrastructure for part 1, in the Jakarta Region (`ap-southeast-3`). Everything in AWS
+Infrastructure for this use case, in the Jakarta Region (`ap-southeast-3`). Everything in AWS
 and Cloudflare is created here, never by hand, so one `terraform destroy` removes it
 all.
 

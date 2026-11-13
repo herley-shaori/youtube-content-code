@@ -1,13 +1,13 @@
 # CI/CD for LLM apps on Amazon Bedrock: HR assistant use case
 
-Companion code for a YouTube tutorial series by Herley Shaori about **how CI/CD should
+Companion code for a YouTube tutorial by Herley Shaori about **how CI/CD should
 work for applications built on a large language model (LLM)**, using Amazon Bedrock
 in the Jakarta Region (`ap-southeast-3`). The HR leave assistant of the fictional
 **Example Corp** is only a wrapper that makes the use case concrete; any Lambda app
 that calls Bedrock fits the same pipeline.
 
-This folder holds both parts of the use case: the application code in `app/` and,
-from part 1 onwards, the infrastructure code in `terraform/`.
+This folder holds the application code in `app/` and the infrastructure code in
+`terraform/`.
 
 > **Disclaimer:** Example Corp is a fictional company, and all names in this tutorial
 > (employees, accounts, and the company) are fictional. Any resemblance to real
@@ -45,24 +45,13 @@ So how should a change to an LLM app reach production safely?
 7. **Promote to production.**
 8. **Monitor real usage** and turn what you find into new test cases.
 
-Part 1 builds the backbone (steps 1 to 5 with a smoke test). Later parts add the rest.
-
-## Parts
-
-| Part | Pipeline stage added | Added to the app |
-| --- | --- | --- |
-| 1. CI/CD basics | Fast tests, package, deploy, smoke test | Leave policy Q&A with the policy in the system prompt |
-| 2. Guardrails as code | Safety tests in the pipeline | Block questions about other employees' salary or personal data |
-| 3. Evaluation gate | Evaluation set and quality gate | Reference Q&A dataset; the pipeline fails if answer quality drops |
-| 4. Bedrock Agents | Versions and aliases to promote | "Check my balance" and "request leave" actions backed by DynamoDB |
-| 5. Knowledge Base | Data pipeline for RAG documents | Move the policy from the prompt to documents in Amazon S3 |
-
-Each part gets a Git tag (for example `bedrock-hr-assistant-1`) so the code matches
-the video.
+This tutorial builds steps 1 to 5, with a smoke test as the evaluation on staging.
+Steps 6 to 8 are not covered. The code shown in the video will be tagged
+`bedrock-hr-assistant-1`.
 
 ## Building it on AWS in Jakarta
 
-Implementation choices for part 1, and why:
+Implementation choices, and why:
 
 - **GitHub Actions as the CI/CD engine.** AWS CodeConnections (formerly CodeStar
   Connections) is not available in `ap-southeast-3`, so CodePipeline there cannot use
@@ -166,7 +155,7 @@ aws/bedrock-cicd/                  # topic: CI/CD for Amazon Bedrock apps
     │   │   └── policy.md          # fictional leave policy
     │   ├── tests/                 # sanity tests (no AWS calls) and smoke.py (deployed app)
     │   └── run_local.py           # runs src/ on http://127.0.0.1:8765
-    └── terraform/                 # infrastructure code (AWS, Cloudflare, GitHub), part 1
+    └── terraform/                 # infrastructure code (AWS, Cloudflare, GitHub)
 ```
 
 Only `app/src/` is deployed to Lambda. Tests and the local runner stay out of the
