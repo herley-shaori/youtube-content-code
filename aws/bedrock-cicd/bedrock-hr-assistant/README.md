@@ -13,7 +13,7 @@ This folder holds the application code in `app/` and the infrastructure code in
 > (employees, accounts, and the company) are fictional. Any resemblance to real
 > companies or people is coincidental.
 
-Video: link not published yet.
+**Video:** this folder is the code for [CI/CD for LLM apps on AWS (Amazon Bedrock) with GitHub Actions, OIDC, and Terraform](https://youtu.be/vIbt29DjLuE) (narrated in Indonesian).
 
 ## The problem
 
