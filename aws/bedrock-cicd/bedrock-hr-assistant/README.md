@@ -46,8 +46,9 @@ So how should a change to an LLM app reach production safely?
 8. **Monitor real usage** and turn what you find into new test cases.
 
 This tutorial builds steps 1 to 5, with a smoke test as the evaluation on staging.
-Steps 6 to 8 are not covered. The code shown in the video will be tagged
-`bedrock-hr-assistant-1`.
+Steps 6 to 8 are not covered. The code shown in the video is tagged
+[`bedrock-hr-assistant-1`](https://github.com/herley-shaori/youtube-content-code/releases/tag/bedrock-hr-assistant-1), and the slides are attached
+to that release as a PDF.
 
 ## Building it on AWS in Jakarta
 
