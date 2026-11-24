@@ -37,6 +37,12 @@ variable "initial_image_tag" {
   default     = "v1.0"
 }
 
+variable "permissions_boundary_arn" {
+  description = "Permissions boundary for the IAM roles this lab creates. Null means none. Set it when your account only lets you create roles that carry a boundary."
+  type        = string
+  default     = null
+}
+
 variable "create_github_oidc_provider" {
   description = "False when the account already has the GitHub OIDC provider."
   type        = bool

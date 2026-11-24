@@ -218,8 +218,9 @@ data "aws_iam_policy_document" "ecs_tasks_trust" {
 
 # Used by ECS itself to pull the image and write logs, not by the website.
 resource "aws_iam_role" "task_execution" {
-  name               = "${local.name}-task-execution"
-  assume_role_policy = data.aws_iam_policy_document.ecs_tasks_trust.json
+  name                 = "${local.name}-task-execution"
+  assume_role_policy   = data.aws_iam_policy_document.ecs_tasks_trust.json
+  permissions_boundary = var.permissions_boundary_arn
 }
 
 resource "aws_iam_role_policy_attachment" "task_execution" {

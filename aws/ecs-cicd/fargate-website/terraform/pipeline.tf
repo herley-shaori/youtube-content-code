@@ -47,6 +47,7 @@ resource "aws_iam_role" "github_deploy" {
   name                 = "${local.name}-github-deploy"
   assume_role_policy   = data.aws_iam_policy_document.github_trust.json
   max_session_duration = 3600
+  permissions_boundary = var.permissions_boundary_arn
 }
 
 # The pipeline may push to this one repository and update this one service.
