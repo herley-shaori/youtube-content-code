@@ -148,11 +148,11 @@ locals {
 }
 
 resource "github_actions_environment_secret" "deploy" {
-  for_each        = toset(keys(local.github_secrets))
-  repository      = local.github_repo
-  environment     = github_repository_environment.deploy.environment
-  secret_name     = each.key
-  plaintext_value = local.github_secrets[each.key]
+  for_each    = toset(keys(local.github_secrets))
+  repository  = local.github_repo
+  environment = github_repository_environment.deploy.environment
+  secret_name = each.key
+  value       = local.github_secrets[each.key]
 }
 
 resource "github_actions_environment_variable" "deploy" {
