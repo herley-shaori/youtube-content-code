@@ -1,5 +1,6 @@
 """Sanity tests: start the real server on a free port and call it over HTTP."""
 
+import os
 import sys
 import threading
 import unittest
@@ -7,6 +8,9 @@ import urllib.error
 import urllib.request
 from http.server import ThreadingHTTPServer
 from pathlib import Path
+
+# The website needs its greeting, and the tests provide one.
+os.environ.setdefault("GREETING", "Hello World")
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "src"))
 import server  # noqa: E402

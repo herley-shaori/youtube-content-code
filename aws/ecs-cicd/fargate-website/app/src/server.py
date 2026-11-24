@@ -7,6 +7,8 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
 # Set at image build time from the Git tag, for example v1.0.
 VERSION = os.environ.get("APP_VERSION", "dev")
+# The heading of the page. Required: /health fails without it.
+GREETING = os.environ.get("GREETING")
 
 PAGE = """<!doctype html>
 <html lang="en">
@@ -25,7 +27,7 @@ PAGE = """<!doctype html>
 </head>
 <body>
 <main>
-  <h1>Hello World</h1>
+  <h1>{greeting}</h1>
   <p>Version {version}</p>
   <small>Updated from Amazon ECR by the pipeline</small>
 </main>
@@ -37,9 +39,13 @@ PAGE = """<!doctype html>
 class Handler(BaseHTTPRequestHandler):
     def do_GET(self):
         if self.path == "/":
-            self._send(200, PAGE.format(version=VERSION), "text/html; charset=utf-8")
+            page = PAGE.format(greeting=GREETING or "Hello World", version=VERSION)
+            self._send(200, page, "text/html; charset=utf-8")
         elif self.path == "/health":
-            self._send(200, "ok", "text/plain")
+            if GREETING:
+                self._send(200, "ok", "text/plain")
+            else:
+                self._send(500, "GREETING is not set", "text/plain")
         else:
             self._send(404, "not found", "text/plain")
 
