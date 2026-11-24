@@ -18,10 +18,10 @@ PAGE = """<!doctype html>
 <title>Hello World</title>
 <style>
   body {{ margin: 0; min-height: 100vh; display: grid; place-items: center;
-         font-family: system-ui, sans-serif; background: #e6f4ea; color: #202124; }}
+         font-family: system-ui, sans-serif; background: #fef7e0; color: #202124; }}
   main {{ text-align: center; }}
   h1 {{ font-size: 4rem; margin: 0 0 1rem; }}
-  p {{ font-size: 2rem; margin: 0; color: #188038; font-weight: 600; }}
+  p {{ font-size: 2rem; margin: 0; color: #b06000; font-weight: 600; }}
   small {{ display: block; margin-top: 1.5rem; font-size: 1.25rem; color: #5f6368; }}
 </style>
 </head>

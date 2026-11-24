@@ -250,6 +250,11 @@ resource "aws_ecs_task_definition" "web" {
       containerPort = local.container_port
       protocol      = "tcp"
     }]
+    # The website needs its heading. Without it /health answers 500.
+    environment = [{
+      name  = "GREETING"
+      value = "Hello from Amazon ECS"
+    }]
     logConfiguration = {
       logDriver = "awslogs"
       options = {

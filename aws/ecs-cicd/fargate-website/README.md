@@ -105,7 +105,8 @@ The lab uses three versions:
 | --- | --- | --- |
 | `fargate-website-stg-v1.0` | First release | Two tasks show "Version v1.0" |
 | `fargate-website-stg-v2.0` | The page text changes | Old and new tasks run side by side, then the page shows "Version v2.0" |
-| `fargate-website-stg-v3.0` | `/health` fails in ECS only | New tasks never become healthy, the deployment is rolled back, the page still shows "Version v2.0", and the pipeline fails |
+| `fargate-website-stg-v3.0` | The heading comes from the variable `GREETING`, which the task definition does not have, so `/health` fails in ECS only | New tasks never become healthy, the deployment is rolled back, the page still shows "Version v2.0", and the pipeline fails |
+| `fargate-website-stg-v4.0` | The fix: Terraform adds `GREETING` to the task definition. Run `terraform apply` before pushing the tag | The page shows "Hello from Amazon ECS" and "Version v4.0" |
 
 To watch visitors during an update, call the website every second:
 
