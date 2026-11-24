@@ -1,0 +1,159 @@
+name: Deploy fargate-website to staging
+
+# Runs only when a tag such as fargate-website-stg-v1.0 is pushed.
+on:
+  push:
+    tags:
+      - fargate-website-stg-v*
+
+permissions:
+  contents: read
+
+env:
+  APP_DIR: aws/ecs-cicd/fargate-website/app
+
+jobs:
+  verify-tag:
+    name: Verify the tagged commit is on master
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - run: git merge-base --is-ancestor "$GITHUB_SHA" origin/master
+
+  sanity:
+    name: ${{ matrix.title }}
+    needs: verify-tag
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - title: "Sanity: home page shows Hello World and the version"
+            suite: HomePageTest
+          - title: "Sanity: /health answers 200 for the load balancer"
+            suite: HealthCheckTest
+          - title: "Sanity: unknown paths answer 404"
+            suite: UnknownPathTest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - run: python -m unittest -v "tests.test_server.${{ matrix.suite }}"
+        working-directory: ${{ env.APP_DIR }}
+
+  build:
+    name: Build the container image
+    needs: sanity
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      # fargate-website-stg-v1.0 becomes v1.0: the image tag and the version on the page.
+      - run: echo "VERSION=${GITHUB_REF_NAME#fargate-website-stg-}" >> "$GITHUB_ENV"
+      - run: docker build --build-arg "APP_VERSION=$VERSION" -t "fargate-website:$VERSION" .
+        working-directory: ${{ env.APP_DIR }}
+      - name: Check that the container starts and shows the version
+        run: |
+          docker run -d --name web -p 8080:8080 "fargate-website:$VERSION"
+          curl -sSf --retry 10 --retry-all-errors --retry-delay 1 http://localhost:8080/ | grep "Version $VERSION"
+      - run: docker save "fargate-website:$VERSION" | gzip > image.tar.gz
+      - uses: actions/upload-artifact@v4
+        with:
+          name: container-image
+          path: image.tar.gz
+          retention-days: 1
+
+  push:
+    name: Push the image to Amazon ECR
+    needs: build
+    runs-on: ubuntu-latest
+    environment: app-stg
+    permissions:
+      contents: read
+      id-token: write
+    # The AWS CLI assumes the role by itself from these variables and the token file.
+    # aws-actions/configure-aws-credentials is not used because it always prints the
+    # role ID, which encodes the account ID, and these logs are public.
+    env:
+      AWS_ROLE_ARN: ${{ secrets.AWS_ROLE_ARN }}
+      AWS_REGION: ${{ vars.AWS_REGION }}
+      ECR_REPOSITORY_URL: ${{ secrets.ECR_REPOSITORY_URL }}
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: container-image
+      - name: Get a GitHub OIDC token for AWS
+        run: |
+          echo "::add-mask::$(echo "$AWS_ROLE_ARN" | cut -d: -f5)"
+          curl -sSf -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
+            "$ACTIONS_ID_TOKEN_REQUEST_URL&audience=sts.amazonaws.com" \
+            | jq -r .value > "$RUNNER_TEMP/aws-oidc-token"
+          echo "AWS_WEB_IDENTITY_TOKEN_FILE=$RUNNER_TEMP/aws-oidc-token" >> "$GITHUB_ENV"
+      - run: echo "VERSION=${GITHUB_REF_NAME#fargate-website-stg-}" >> "$GITHUB_ENV"
+      - run: aws ecr get-login-password | docker login --username AWS --password-stdin "${ECR_REPOSITORY_URL%%/*}"
+      - run: docker load < image.tar.gz
+      # The repository has immutable tags, so pushing an existing version fails here.
+      - run: |
+          docker tag "fargate-website:$VERSION" "$ECR_REPOSITORY_URL:$VERSION"
+          docker push "$ECR_REPOSITORY_URL:$VERSION"
+
+  deploy:
+    name: Update the ECS service and wait for the rollout
+    needs: push
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    environment: app-stg
+    permissions:
+      contents: read
+      id-token: write
+    env:
+      AWS_ROLE_ARN: ${{ secrets.AWS_ROLE_ARN }}
+      AWS_REGION: ${{ vars.AWS_REGION }}
+      ECR_REPOSITORY_URL: ${{ secrets.ECR_REPOSITORY_URL }}
+      ECS_CLUSTER: ${{ vars.ECS_CLUSTER }}
+      ECS_SERVICE: ${{ vars.ECS_SERVICE }}
+      TASK_FAMILY: ${{ vars.TASK_FAMILY }}
+      CONTAINER_NAME: ${{ vars.CONTAINER_NAME }}
+    steps:
+      - name: Get a GitHub OIDC token for AWS
+        run: |
+          echo "::add-mask::$(echo "$AWS_ROLE_ARN" | cut -d: -f5)"
+          curl -sSf -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
+            "$ACTIONS_ID_TOKEN_REQUEST_URL&audience=sts.amazonaws.com" \
+            | jq -r .value > "$RUNNER_TEMP/aws-oidc-token"
+          echo "AWS_WEB_IDENTITY_TOKEN_FILE=$RUNNER_TEMP/aws-oidc-token" >> "$GITHUB_ENV"
+      - run: echo "VERSION=${GITHUB_REF_NAME#fargate-website-stg-}" >> "$GITHUB_ENV"
+      - name: Register a task definition revision that points to the new image
+        run: |
+          aws ecs describe-task-definition --task-definition "$TASK_FAMILY" --query taskDefinition > current.json
+          jq --arg name "$CONTAINER_NAME" --arg image "$ECR_REPOSITORY_URL:$VERSION" '
+            (.containerDefinitions[] | select(.name == $name) | .image) = $image
+            | del(.taskDefinitionArn, .revision, .status, .requiresAttributes,
+                  .compatibilities, .registeredAt, .registeredBy)' current.json > new.json
+          arn=$(aws ecs register-task-definition --cli-input-json file://new.json \
+            --tags key=app-name,value=fargate-website \
+            --query taskDefinition.taskDefinitionArn --output text)
+          echo "TASK_DEFINITION_ARN=$arn" >> "$GITHUB_ENV"
+          echo "Registered revision ${arn##*:}"
+      - name: Start the rolling update
+        run: aws ecs update-service --cluster "$ECS_CLUSTER" --service "$ECS_SERVICE" --task-definition "$TASK_DEFINITION_ARN" > /dev/null
+      # "aws ecs wait services-stable" also succeeds after a rollback, because the old
+      # version is stable again. So follow the rollout state of this deployment instead.
+      - name: Wait until the rollout completes or is rolled back
+        run: |
+          while true; do
+            aws ecs describe-services --cluster "$ECS_CLUSTER" --services "$ECS_SERVICE" --query 'services[0]' > service.json
+            state=$(jq -r --arg td "$TASK_DEFINITION_ARN" '[.deployments[] | select(.taskDefinition == $td) | .rolloutState][0] // "GONE"' service.json)
+            jq -r '.deployments[] | "\(.status) revision \(.taskDefinition | split(":") | last): \(.runningCount) running, \(.failedTasks) failed, \(.rolloutState)"' service.json
+            case "$state" in
+              COMPLETED)
+                echo "Version $VERSION is live."
+                exit 0 ;;
+              FAILED | GONE)
+                echo "::error::The new tasks never became healthy. The circuit breaker rolled the service back to the previous version."
+                exit 1 ;;
+            esac
+            sleep 15
+          done

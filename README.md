@@ -11,6 +11,7 @@ folder to study and try the code.
 | --- | --- | --- | --- |
 | OAuth 2.0 implicit flow with Cognito and API Gateway | AWS, Terraform, Python | [Open tutorial](aws/oauth2-implicit-cognito-aws-apigw/) | Not published yet |
 | CI/CD for LLM apps on Amazon Bedrock (HR assistant use case) | AWS, Amazon Bedrock, Lambda, Python | [Open tutorial](aws/bedrock-cicd/bedrock-hr-assistant/) | [Watch on YouTube](https://youtu.be/vIbt29DjLuE) |
+| Updating an Amazon ECS service from Amazon ECR (Hello World website on Fargate) | AWS, Amazon ECS, Amazon ECR, GitHub Actions, Terraform | [Open tutorial](aws/ecs-cicd/fargate-website/) | Not published yet |
 
 Video links are added once each video is published. Every folder has its own README
 that covers prerequisites, configuration, how to run it, and how to clean up any
