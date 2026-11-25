@@ -3,8 +3,8 @@
 A static website kept in an Amazon S3 bucket, built in the Jakarta Region
 (`ap-southeast-3`).
 
-This is the first step: Terraform creates only the private bucket. The website files
-and the way visitors reach them come in later steps.
+So far Terraform creates the private bucket and uploads the page in `app/index.html`.
+The way visitors reach the page comes in a later step, so the page is not public yet.
 
 ## What Terraform creates
 
@@ -12,6 +12,7 @@ and the way visitors reach them come in later steps.
 | --- | --- |
 | S3 bucket `static-website-stg-<suffix>` | Holds the website files |
 | Public access block | Keeps the bucket private |
+| Object `index.html` | The page from `app/index.html` |
 
 ## Run it
 
