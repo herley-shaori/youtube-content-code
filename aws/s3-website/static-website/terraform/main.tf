@@ -1,4 +1,4 @@
-# First step of the lab: only the bucket that will hold the website files.
+# The bucket that holds the website files, and the page itself.
 # Nothing is public yet.
 
 provider "aws" {
@@ -36,4 +36,13 @@ resource "aws_s3_bucket_public_access_block" "website" {
   block_public_policy     = true
   ignore_public_acls      = true
   restrict_public_buckets = true
+}
+
+# The website itself: one page, uploaded again whenever the file changes.
+resource "aws_s3_object" "index" {
+  bucket       = aws_s3_bucket.website.id
+  key          = "index.html"
+  source       = "${path.module}/../app/index.html"
+  etag         = filemd5("${path.module}/../app/index.html")
+  content_type = "text/html; charset=utf-8"
 }
