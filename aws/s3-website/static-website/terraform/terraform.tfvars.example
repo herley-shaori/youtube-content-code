@@ -1,0 +1,4 @@
+# Copy to terraform.tfvars (ignored by Git) and fill in your own values.
+
+account_id  = "YOUR_12_DIGIT_ACCOUNT_ID"
+aws_profile = "my-profile"
