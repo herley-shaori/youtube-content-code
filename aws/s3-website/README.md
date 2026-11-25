@@ -6,4 +6,4 @@ Tutorials on serving a static website from Amazon S3, built in the Jakarta Regio
 
 | Use case | What it shows |
 | --- | --- |
-| [static-website](static-website/) | A static website kept in an S3 bucket, starting with the bucket itself |
+| [static-website](static-website/) | A static website served from the S3 website endpoint, with Cloudflare as the only public entrance |

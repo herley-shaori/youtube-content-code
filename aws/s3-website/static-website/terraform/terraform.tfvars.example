@@ -1,4 +1,11 @@
 # Copy to terraform.tfvars (ignored by Git) and fill in your own values.
+# The Cloudflare token is not stored here: export TF_VAR_cloudflare_api_token.
 
 account_id  = "YOUR_12_DIGIT_ACCOUNT_ID"
 aws_profile = "my-profile"
+
+# true opens the website to everyone through Cloudflare.
+public_access = false
+
+cloudflare_zone_name = "example.com"
+hostname             = "s3.example.com"
