@@ -18,5 +18,6 @@ output "route_table_id" {
 }
 
 output "resource_share_arn" {
-  value = aws_ram_resource_share.subnets.arn
+  description = "Null while share_with is empty."
+  value       = one(aws_ram_resource_share.subnets[*].arn)
 }

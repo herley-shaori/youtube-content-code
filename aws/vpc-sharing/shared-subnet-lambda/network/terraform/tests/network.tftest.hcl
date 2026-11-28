@@ -22,6 +22,14 @@ run "layout" {
     error_message = "unexpected share"
   }
 }
+run "not_shared_yet" {
+  command = plan
+  variables { share_with = [] }
+  assert {
+    condition     = length(aws_subnet.private) == 3 && length(aws_ram_resource_share.subnets) == 0 && length(aws_ram_resource_association.subnet) == 0
+    error_message = "an empty share_with must build the VPC without a resource share"
+  }
+}
 run "rejects_other_sizes" {
   command = plan
   variables { vpc_cidr = "10.53.0.0/16" }

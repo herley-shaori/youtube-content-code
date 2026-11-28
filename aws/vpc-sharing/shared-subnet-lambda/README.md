@@ -54,14 +54,14 @@ In the network account, a resource share says what is shared and with whom:
 
 ```hcl
 resource "aws_ram_resource_association" "subnet" {
-  for_each           = aws_subnet.private
-  resource_share_arn = aws_ram_resource_share.subnets.arn
+  for_each           = local.shared ? aws_subnet.private : {}
+  resource_share_arn = aws_ram_resource_share.subnets[0].arn
   resource_arn       = each.value.arn          # a subnet, not the VPC
 }
 
 resource "aws_ram_principal_association" "receiver" {
   for_each           = toset(var.share_with)   # an account, or an organizational unit
-  resource_share_arn = aws_ram_resource_share.subnets.arn
+  resource_share_arn = aws_ram_resource_share.subnets[0].arn
   principal          = each.value
 }
 ```
@@ -99,6 +99,17 @@ terraform apply
 
 If the app side says that no VPC matches, the share has not arrived yet. Check
 `share_with` in the network side and that sharing is turned on in the organization.
+
+### See it fail first
+
+To see what sharing changes, build the network without a receiver first:
+
+1. Network side: `terraform apply -var 'share_with=[]'`. The VPC and its subnets exist,
+   but only in the network account.
+2. App side: `terraform apply` fails with `no matching EC2 VPC found`. The app account
+   cannot see a network that nobody shared with it.
+3. Network side: `terraform apply` with `share_with` filled in.
+4. App side: `terraform apply` again, with no change to the code. It works now.
 
 ## Expected result
 
