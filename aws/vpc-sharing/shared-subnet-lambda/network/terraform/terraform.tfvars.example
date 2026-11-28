@@ -1,0 +1,14 @@
+# Copy to terraform.tfvars (ignored by Git) and fill in your own values.
+
+# The network account, which owns the VPC.
+account_id  = "YOUR_NETWORK_ACCOUNT_ID"
+aws_profile = "my-profile"
+
+# Set this when the profile signs in to another account of the organization first.
+# assume_role_name = "OrganizationAccountAccessRole"
+
+# Who receives the subnets. One account:
+share_with = ["YOUR_APP_ACCOUNT_ID"]
+
+# Or an organizational unit, so that every account in it receives them:
+# share_with = ["arn:aws:organizations::123456789012:ou/o-example/ou-example"]
