@@ -2,8 +2,8 @@
 
 One account owns a VPC and lends its subnets to another account of the same AWS
 Organization. The other account runs a Lambda function inside those subnets, but it
-cannot change the network. The function answers with its private IP address, which
-shows that it runs in a network it does not own.
+cannot change the network. Terraform then shows the private IP address of the function
+and the owner of each subnet, which proves that it runs in a network it does not own.
 
 ```text
 network account                              app account
@@ -35,7 +35,7 @@ Not published yet.
 | --- | --- | --- |
 | `network/terraform/` | Network account | The VPC, three private subnets, and the AWS RAM resource share |
 | `terraform/` | App account | The Lambda function, its security group and its role, placed in the shared subnets |
-| `app/src/handler.py` | | The function: answers with its private IP address and the subnet that holds it |
+| `app/src/handler.py` | | The function: answers with who owns it and who owns the network |
 | `app/tests/` | | Sanity tests for the function |
 
 ## What Terraform creates
@@ -102,21 +102,32 @@ If the app side says that no VPC matches, the share has not arrived yet. Check
 
 ## Expected result
 
-The app side calls the function once and prints its answer:
+The app side calls the function once and prints two outputs:
 
 ```text
 function_answer = {
   "function_owner"          = "********0000"
-  "private_ip"              = "10.53.9.25"
   "runs_in_a_shared_subnet" = true
-  "subnet_cidr"             = "10.53.9.0/24"
-  "subnet_id"               = "subnet-0123456789abcdef0"
-  "vpc_id"                  = "vpc-0123456789abcdef0"
-  "vpc_owner"               = "********1111"
+  "subnets" = {
+    "subnet-0123456789abcdef0" = "10.53.8.0/24"
+    ...
+  }
+  "vpc_id"    = "vpc-0123456789abcdef0"
+  "vpc_owner" = "********1111"
+}
+function_network_interfaces = {
+  "subnet-0123456789abcdef0" = {
+    "interface_owner" = "********0000"
+    "private_ip"      = "10.53.8.166"
+    "subnet_cidr"     = "10.53.8.0/24"
+    "subnet_owner"    = "********1111"
+  }
+  ...
 }
 ```
 
-The address is inside `10.53.0.0/20`, and the two owners differ. Call it again with:
+Each address is inside `10.53.0.0/20`. The subnet belongs to the network account, and
+the network interface in it belongs to the app account. Call it again with:
 
 ```bash
 aws lambda invoke --function-name shared-subnet-lambda-stg /dev/stdout
@@ -148,6 +159,8 @@ interfaces.
 - Tags of the network account are not shared, so the app side finds the VPC by its
   address range. Availability zones are chosen by zone ID, because a zone name can point
   to a different zone in another account.
+- A function in a VPC cannot find its own address. Inside Lambda it only sees an internal
+  `169.254.x.x` address, so Terraform reads the network interfaces from EC2 instead.
 - The app account cannot use the default security group of the shared VPC. It creates
   its own.
 - When the share is removed, resources that already run in the subnets keep running,
