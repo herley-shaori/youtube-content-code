@@ -38,6 +38,9 @@ locals {
 
   # The /20 is cut into /24 subnets. Numbers 8, 9 and 10 are the private ones:
   # 10.53.8.0/24, 10.53.9.0/24 and 10.53.10.0/24 with the default range.
+  # With nobody to share with, the VPC is built alone and no resource share exists.
+  shared = length(var.share_with) > 0
+
   private_subnets = {
     for index, zone_id in local.zone_ids : zone_id => cidrsubnet(var.vpc_cidr, 4, 8 + index)
   }
@@ -77,6 +80,8 @@ resource "aws_default_security_group" "locked" {
 #   aws ram enable-sharing-with-aws-organization
 # After that, accounts in the organization receive the subnets without an invitation.
 resource "aws_ram_resource_share" "subnets" {
+  count = local.shared ? 1 : 0
+
   name                      = local.name
   allow_external_principals = false
 
@@ -85,9 +90,9 @@ resource "aws_ram_resource_share" "subnets" {
 
 # What is shared: each subnet. A VPC cannot be shared as a whole.
 resource "aws_ram_resource_association" "subnet" {
-  for_each = aws_subnet.private
+  for_each = local.shared ? aws_subnet.private : {}
 
-  resource_share_arn = aws_ram_resource_share.subnets.arn
+  resource_share_arn = aws_ram_resource_share.subnets[0].arn
   resource_arn       = each.value.arn
 }
 
@@ -96,6 +101,6 @@ resource "aws_ram_resource_association" "subnet" {
 resource "aws_ram_principal_association" "receiver" {
   for_each = toset(var.share_with)
 
-  resource_share_arn = aws_ram_resource_share.subnets.arn
+  resource_share_arn = aws_ram_resource_share.subnets[0].arn
   principal          = each.value
 }

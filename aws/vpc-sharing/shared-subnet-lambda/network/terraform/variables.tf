@@ -37,11 +37,7 @@ variable "vpc_cidr" {
 }
 
 variable "share_with" {
-  description = "Who receives the subnets: account IDs, or the ARN of an organizational unit or of the whole organization. All of them must be in your AWS Organization."
+  description = "Who receives the subnets: account IDs, or the ARN of an organizational unit or of the whole organization. All of them must be in your AWS Organization. Empty means the VPC exists but nothing is shared yet."
   type        = list(string)
-
-  validation {
-    condition     = length(var.share_with) > 0
-    error_message = "share_with needs at least one account ID or ARN."
-  }
+  default     = []
 }
