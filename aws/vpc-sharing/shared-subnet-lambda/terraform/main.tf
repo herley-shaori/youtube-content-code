@@ -116,7 +116,7 @@ data "archive_file" "function" {
 
 resource "aws_lambda_function" "where_am_i" {
   function_name    = local.name
-  description      = "Answers with its private IP address and the shared subnet that holds it"
+  description      = "Answers with who owns the function and who owns the network it runs in"
   role             = aws_iam_role.function.arn
   runtime          = "python3.13"
   architectures    = ["arm64"]
@@ -135,7 +135,6 @@ resource "aws_lambda_function" "where_am_i" {
   environment {
     variables = {
       VPC_ID         = data.aws_vpc.shared.id
-      VPC_CIDR       = data.aws_vpc.shared.cidr_block
       VPC_OWNER      = data.aws_vpc.shared.owner_id
       SHARED_SUBNETS = jsonencode({ for id, subnet in data.aws_subnet.shared : id => subnet.cidr_block })
     }
@@ -153,4 +152,23 @@ resource "aws_lambda_invocation" "proof" {
     code    = aws_lambda_function.where_am_i.source_code_hash
     subnets = join(",", sort(data.aws_subnets.shared.ids))
   }
+}
+
+# --- The proof -------------------------------------------------------------------------------
+
+# Lambda keeps one network interface per subnet for this function. The function cannot
+# see them from the inside, so Terraform reads them from EC2 once the function has run.
+data "aws_network_interface" "function" {
+  for_each = toset(data.aws_subnets.shared.ids)
+
+  filter {
+    name   = "subnet-id"
+    values = [each.value]
+  }
+  filter {
+    name   = "group-id"
+    values = [aws_security_group.function.id]
+  }
+
+  depends_on = [aws_lambda_invocation.proof]
 }
