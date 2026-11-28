@@ -1,0 +1,11 @@
+# Copy to terraform.tfvars (ignored by Git) and fill in your own values.
+
+# The app account, which runs the function. It is not the account that owns the VPC.
+account_id  = "YOUR_APP_ACCOUNT_ID"
+aws_profile = "my-profile"
+
+# Set this when the profile signs in to another account of the organization first.
+# assume_role_name = "OrganizationAccountAccessRole"
+
+# Only when the network side uses another range than the default.
+# shared_vpc_cidr = "10.53.0.0/20"
